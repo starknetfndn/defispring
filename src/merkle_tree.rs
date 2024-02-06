@@ -186,9 +186,7 @@ pub fn hash(a: &FieldElement, b: &FieldElement) -> FieldElement {
 pub fn read_airdrop() -> Vec<Airdrop> {
     // path to "air-drop.json" relative to where the code was executed
     let possible_paths = vec![
-        "carmine-api-airdrop/src/air-drop.json",
-        "src/air-drop.json",
-        "air-drop.json",
+        "src/air-drop.json"
     ];
     let right_path_res = possible_paths.iter().find(|path| Path::new(path).exists());
     let right_path = match right_path_res {
