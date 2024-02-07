@@ -35,10 +35,10 @@ pub fn get_api_data() -> MerkleTree {
         .clone()
 }
 
-pub fn update_api_data() {
+pub fn update_api_data(round: u8) {
     let mut data = API_DATA.write().expect("Failed to acquire write lock");
     //data.root.value = FieldElement::from_str("14").unwrap();
-    *data = MerkleTree::new(read_airdrop(1u8));
+    *data = MerkleTree::new(read_airdrop(round));
 }
 
 #[derive(Debug, Clone)]
@@ -49,11 +49,9 @@ struct FileNameInfo {
 }
 
 pub fn read_airdrop(round: u8) -> Vec<Airdrop> {
-    // path to "air-drop.json" relative to where the code was executed
-    let possible_paths = vec!["src/air-drop.json"];
-
     let files = extract_valid_files(round);
 
+    // TODO: support for multiple files
     for file in files.iter() {
         let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
         let mut archive: zip::ZipArchive<File> = ZipArchive::<File>::new(zipfile).unwrap();
@@ -64,13 +62,11 @@ pub fn read_airdrop(round: u8) -> Vec<Airdrop> {
             file.read_to_end(&mut buffer).expect("problem reading zip");
             let airdrop: Vec<Airdrop> = from_slice(&buffer).expect("Failed to deserialize airdrop");
 
-            // TODO: create tree. Remove this return statement
             return airdrop;
         }
     }
-    // TODO remove following code at some point
+    // TODO what to do if no data?
     let airdrop: Vec<Airdrop> = vec![];
-
     airdrop
 }
 
@@ -83,7 +79,7 @@ fn extract_valid_files(round: u8) -> Vec<FileNameInfo> {
 
     for entry in path.read_dir().expect("read_dir call failed") {
         if let Ok(entry) = entry {
-            println!("testing {:?}", entry.file_name().to_str().unwrap());
+            // println!("testing {:?}", entry.file_name().to_str().unwrap());
             if let Some(captures) = regex.captures(entry.file_name().to_str().unwrap()) {
                 if let Some(protocol_id) = captures.get(1) {
                     // TODO: what to do if filename is not correct?
@@ -92,7 +88,7 @@ fn extract_valid_files(round: u8) -> Vec<FileNameInfo> {
                         file_name: entry.file_name().to_str().unwrap().to_string(),
                         protocol_id: protocol_id.as_str().parse::<u8>().unwrap(),
                     };
-                    println!("VALID {:?} {:?}", entry.path(), protocol_id.as_str());
+                    //println!("VALID {:?} {:?}", entry.path(), protocol_id.as_str());
                     validFiles.push(fileinfo);
                 }
             }
