@@ -2,16 +2,12 @@ use serde::Deserialize;
 use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashSet, fs::File, path::Path, str::FromStr, vec};
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct Airdrop {
-    pub address: String,
-    amount: String,
-}
+use super::structs::{Airdrop, MerkleTree, Node};
+//pub struct MerkleTree;
+/* pub mod structs;
+pub use structs::MerkleTree; */
 
-pub struct MerkleTree {
-    pub root: Node,
-    airdrops: Vec<Airdrop>,
-}
+//pub struct MerkleTreeImplementation;
 
 pub fn strip_leading_zeroes(hex: &str) -> String {
     if hex.len() <= 3 || &hex[..2] != "0x" {
@@ -29,8 +25,7 @@ pub fn strip_leading_zeroes(hex: &str) -> String {
 }
 
 impl MerkleTree {
-    pub fn new() -> Self {
-        let airdrops = read_airdrop();
+    pub fn new(airdrops: Vec<Airdrop>) -> Self {
         let mut leaves: Vec<Node> = airdrops
             .clone()
             .into_iter()
@@ -89,14 +84,6 @@ impl MerkleTree {
         // in order to be readable by FE needs to be base16 string
         Ok(calldata.iter().map(felt_to_b16).collect())
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct Node {
-    pub left_child: Option<Box<Node>>,
-    pub right_child: Option<Box<Node>>,
-    pub accessible_addresses: HashSet<FieldElement>,
-    pub value: FieldElement,
 }
 
 impl Node {
@@ -181,20 +168,4 @@ pub fn hash(a: &FieldElement, b: &FieldElement) -> FieldElement {
         return pedersen_hash(a, b);
     }
     pedersen_hash(b, a)
-}
-
-pub fn read_airdrop() -> Vec<Airdrop> {
-    // path to "air-drop.json" relative to where the code was executed
-    let possible_paths = vec![
-        "src/air-drop.json"
-    ];
-    let right_path_res = possible_paths.iter().find(|path| Path::new(path).exists());
-    let right_path = match right_path_res {
-        Some(v) => Path::new(v),
-        None => panic!("Incorect airdrop file path"),
-    };
-    let file = File::open(right_path).expect("Failed to read file");
-    let reader = std::io::BufReader::new(file);
-    let airdrop: Vec<Airdrop> = serde_json::from_reader(reader).expect("Failed to parse airdrop");
-    airdrop
 }
