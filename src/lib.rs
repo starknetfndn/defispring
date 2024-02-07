@@ -113,8 +113,8 @@ mod tests {
             amount: "7".to_string(),
         });
         let mt = MerkleTree::new(drop);
-        let aaaa = mt.address_calldata("0x1");
-        print!("");
+        /*  let aaaa = mt.address_calldata("0x1");
+        print!(""); */
     }
 
     #[test]

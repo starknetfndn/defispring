@@ -35,7 +35,12 @@ impl MerkleTree {
 
         MerkleTree { root, airdrops }
     }
-    pub fn address_calldata(&self, address: &str) -> Result<Vec<String>, ()> {
+    pub fn address_calldata(
+        &self,
+        round: u8,
+        protocol_id: u8,
+        address: &str,
+    ) -> Result<Vec<String>, ()> {
         let felt_address = match FieldElement::from_str(address) {
             Ok(v) => v,
             _ => return Err(()),
@@ -69,10 +74,12 @@ impl MerkleTree {
             .find(|a| &FieldElement::from_str(&a.address).unwrap() == &felt_address)
             .unwrap();
 
+        let round = FieldElement::from(round);
+        let protocol_id = FieldElement::from(protocol_id);
         let address = FieldElement::from_str(&airdrop.address).unwrap();
         let amount = FieldElement::from_str(&airdrop.amount).unwrap();
 
-        let mut calldata = vec![address, amount];
+        let mut calldata = vec![round, protocol_id, address, amount];
         calldata.append(&mut hashes);
 
         // in order to be readable by FE needs to be base16 string
