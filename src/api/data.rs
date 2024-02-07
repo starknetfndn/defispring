@@ -53,6 +53,7 @@ pub struct FileNameInfo {
     protocol_id: u8,
 }
 
+// Reads all airdrop info for the given round
 pub fn read_airdrops(round: u8) -> Vec<ProtocolAirdrop> {
     let files = extract_valid_files(round);
     let mut results: Vec<ProtocolAirdrop> = vec![];
@@ -80,28 +81,7 @@ pub fn read_airdrops(round: u8) -> Vec<ProtocolAirdrop> {
     results
 }
 
-pub fn read_airdrop(round: u8) -> Vec<Airdrop> {
-    let files = extract_valid_files(round);
-
-    // TODO: support for multiple files
-    for file in files.iter() {
-        let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
-        let mut archive: zip::ZipArchive<File> = ZipArchive::<File>::new(zipfile).unwrap();
-        if archive.len() > 0 {
-            // Only read the first file in the zip archive
-            let mut file = archive.by_index(0).unwrap();
-            let mut buffer = Vec::new();
-            file.read_to_end(&mut buffer).expect("problem reading zip");
-            let airdrop: Vec<Airdrop> = from_slice(&buffer).expect("Failed to deserialize airdrop");
-
-            return airdrop;
-        }
-    }
-    // TODO what to do if no data?
-    let airdrop: Vec<Airdrop> = vec![];
-    airdrop
-}
-
+// Returns all files that have the correct filename
 fn extract_valid_files(round: u8) -> Vec<FileNameInfo> {
     let mut validFiles: Vec<FileNameInfo> = vec![];
     let path = Path::new("src/raw_input");
