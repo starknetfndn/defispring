@@ -1,13 +1,7 @@
-use serde::Deserialize;
 use starknet_crypto::{pedersen_hash, FieldElement};
-use std::{collections::HashSet, fs::File, path::Path, str::FromStr, vec};
+use std::{collections::HashSet, str::FromStr, vec};
 
 use super::structs::{Airdrop, MerkleTree, Node};
-//pub struct MerkleTree;
-/* pub mod structs;
-pub use structs::MerkleTree; */
-
-//pub struct MerkleTreeImplementation;
 
 pub fn strip_leading_zeroes(hex: &str) -> String {
     if hex.len() <= 3 || &hex[..2] != "0x" {

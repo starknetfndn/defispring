@@ -4,9 +4,6 @@ use std::{collections::HashSet, fs::File, path::Path, str::FromStr, sync::RwLock
 
 use super::structs::{Airdrop, MerkleTree, Node};
 
-//use crate::api::merkle_tree::MerkleTree;
-//use super::structs::{Airdrop, MerkleTree, Node};
-
 // Use RwLock to allow for mutable access to the data
 lazy_static! {
     static ref API_DATA: RwLock<MerkleTree> = RwLock::new(MerkleTree {
