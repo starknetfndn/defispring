@@ -7,7 +7,7 @@ mod tests {
     use std::str::FromStr;
 
     use crate::api::{
-        data::read_airdrop,
+        data::{read_airdrop, read_airdrops},
         structs::{Airdrop, MerkleTree},
     };
 
@@ -119,8 +119,7 @@ mod tests {
 
     #[test]
     fn lalalal() {
-        let addresses: Vec<String> = read_airdrop(1u8).into_iter().map(|a| a.address).collect();
-        let mt = MerkleTree::new(read_airdrop(1u8));
-        let root = mt.root.value.clone();
+        let read_airdrops = read_airdrops(1u8);
+        print!("");
     }
 }

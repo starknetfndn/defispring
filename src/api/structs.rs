@@ -1,11 +1,23 @@
 use serde::Deserialize;
 use starknet_crypto::FieldElement;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Airdrop {
     pub address: String,
     pub amount: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct ProtocolAirdrop {
+    pub airdrop: Vec<Airdrop>,
+    pub protocol_id: u8,
+}
+
+#[derive(Debug, Clone)]
+pub struct RoundTreeData {
+    pub round: u8,
+    pub protocol_trees: HashMap<u8, MerkleTree>,
 }
 
 #[derive(Debug, Clone)]

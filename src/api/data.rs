@@ -3,7 +3,7 @@ use regex::Regex;
 use serde_json::from_slice;
 use starknet_crypto::FieldElement;
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     fs::File,
     io::Read,
     path::{Path, PathBuf},
@@ -12,40 +12,72 @@ use std::{
     vec,
 };
 
-use super::structs::{Airdrop, MerkleTree, Node};
+use super::structs::{Airdrop, MerkleTree, Node, ProtocolAirdrop, RoundTreeData};
 use zip::ZipArchive;
 
 // Use RwLock to allow for mutable access to the data
 lazy_static! {
-    static ref API_DATA: RwLock<MerkleTree> = RwLock::new(MerkleTree {
-        airdrops: vec![],
-        root: Node {
-            left_child: None,
-            right_child: None,
-            accessible_addresses: HashSet::new(),
-            value: FieldElement::from_str("0").unwrap()
-        }
+    static ref ROUND_DATA: RwLock<RoundTreeData> = RwLock::new(RoundTreeData {
+        round: 0_u8,
+        protocol_trees: HashMap::new(),
     });
 }
 
-pub fn get_api_data() -> MerkleTree {
-    API_DATA
+pub fn get_latest_round_data() -> RoundTreeData {
+    ROUND_DATA
         .read()
         .expect("Failed to acquire read lock")
         .clone()
 }
 
 pub fn update_api_data(round: u8) {
-    let mut data = API_DATA.write().expect("Failed to acquire write lock");
-    //data.root.value = FieldElement::from_str("14").unwrap();
-    *data = MerkleTree::new(read_airdrop(round));
+    let mut data = ROUND_DATA.write().expect("Failed to acquire write lock");
+
+    let protocol_drops = read_airdrops(round);
+    let mut hashes: HashMap<u8, MerkleTree> = HashMap::new();
+    for drop in protocol_drops.iter() {
+        let tree = MerkleTree::new(drop.airdrop.clone());
+        hashes.insert(drop.protocol_id, tree);
+    }
+
+    *data = RoundTreeData {
+        round: round,
+        protocol_trees: hashes,
+    };
 }
 
 #[derive(Debug, Clone)]
-struct FileNameInfo {
+pub struct FileNameInfo {
     full_path: String,
     file_name: String,
     protocol_id: u8,
+}
+
+pub fn read_airdrops(round: u8) -> Vec<ProtocolAirdrop> {
+    let files = extract_valid_files(round);
+    let mut results: Vec<ProtocolAirdrop> = vec![];
+
+    // TODO: support for multiple files
+    for file in files.iter() {
+        let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
+        let mut archive: zip::ZipArchive<File> = ZipArchive::<File>::new(zipfile).unwrap();
+        if archive.len() > 0 {
+            // Only read the first file in the zip archive
+            let mut archive_file = archive.by_index(0).unwrap();
+            let mut buffer = Vec::new();
+            archive_file
+                .read_to_end(&mut buffer)
+                .expect("problem reading zip");
+            let airdrop: Vec<Airdrop> = from_slice(&buffer).expect("Failed to deserialize airdrop");
+
+            let protocol_drop = ProtocolAirdrop {
+                airdrop: airdrop,
+                protocol_id: file.protocol_id,
+            };
+            results.push(protocol_drop);
+        }
+    }
+    results
 }
 
 pub fn read_airdrop(round: u8) -> Vec<Airdrop> {
