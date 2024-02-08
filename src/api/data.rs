@@ -117,27 +117,32 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
 pub fn calculate_cumulative_amount(airdrop: &mut Vec<RoundTreeData>) {
     airdrop.sort_by(|a, b| a.round.cmp(&b.round));
 
+    let mut all_rounds_cums: HashMap<String, u128> = HashMap::new();
+
     for data in airdrop.iter_mut() {
-        for (address, cumulative_amount) in &data.cumulative_amounts {
-            println!(
-                "Round: {}, Address: {}, Cumulative Amount: {}",
-                data.round, address, cumulative_amount
-            );
-        }
         for drop in data.tree.airdrops.iter_mut() {
             let amount = match drop.amount.parse::<u128>() {
                 Ok(value) => value,
                 Err(_) => 0_u128, // FIXME: what to do when data is invalid?
             };
 
-            let current_amount = data
-                .cumulative_amounts
+            let current_amount = all_rounds_cums
                 .entry(drop.address.clone())
                 .or_insert(0_u128);
 
             *current_amount += amount;
         }
+        // Take a snapshot of the current status and set or this round
+        data.cumulative_amounts = all_rounds_cums.clone();
     }
+    /*    for data in airdrop.iter() {
+        for (address, cumulative_amount) in &data.cumulative_amounts {
+            println!(
+                "Round: {}, Address: {}, Cumulative Amount: {}",
+                data.round, address, cumulative_amount
+            );
+        }
+    } */
 }
 
 // Returns all files that have the correct filename syntax
