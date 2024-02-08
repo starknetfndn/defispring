@@ -35,7 +35,7 @@ pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Re
         None => 0_u8,
     };
 
-    let calldata = get_raw_calldata(round, address, protocol_id);
+    let calldata = get_raw_calldata(round, protocol_id, address);
 
     let serialized = HttpResponse::Ok().json(calldata);
     serialized
