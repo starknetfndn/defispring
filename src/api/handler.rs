@@ -31,7 +31,7 @@ pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Re
     serialized
 }
 
-pub async fn get_token_amount(query: web::Query<HashMap<String, String>>) -> impl Responder {
+pub async fn get_airdrop_amount(query: web::Query<HashMap<String, String>>) -> impl Responder {
     let address = match query.get("address") {
         Some(v) => v,
         None => return HttpResponse::BadRequest().finish(),
