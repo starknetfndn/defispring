@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 use actix_web::{web, HttpResponse, Responder};
 
-use super::data::get_latest_round_data;
+use crate::api::structs::RoundTreeData;
+
+use super::data::get_all_data;
 
 pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Responder {
-    let latest_round = 1u8; // FIXME
     let address = match query.get("address") {
         Some(v) => v,
         None => return HttpResponse::BadRequest().finish(),
@@ -20,16 +21,20 @@ pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Re
         }
         None => return HttpResponse::BadRequest().finish(),
     };
-    // TODO: do we want to query by round?
+
+    let round_data = get_all_data();
+    let max_round = round_data.iter().max_by_key(|&p| p.round).unwrap().round;
+
+    // Get the round parameter. Use the max found round if it's not given in query parameters
     let round = match query.get("round") {
         Some(v) => {
             let round = match v.parse::<u8>() {
                 Ok(v) => v,
-                Err(_) => latest_round,
+                Err(_) => max_round,
             };
             round
         }
-        None => latest_round,
+        None => max_round,
     };
 
     println!(
@@ -37,13 +42,27 @@ pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Re
         round, address, protocol_id
     );
 
-    // TODO: a bit awkward structure
-    let round_data = get_latest_round_data();
-    let tree = round_data.protocol_trees[&protocol_id].clone();
-    let calldata: Vec<String> = match tree.address_calldata(round, protocol_id, &address) {
-        Ok(v) => v,
-        Err(_) => vec![],
-    };
+    let relevant_data: Vec<RoundTreeData> = round_data
+        .iter()
+        .filter(|&p| p.protocol_id == protocol_id && p.round == round)
+        .cloned()
+        .collect();
+
+    if (relevant_data.len() != 1) {
+        let none: Vec<String> = Vec::new();
+        return HttpResponse::Ok().json(none);
+    }
+
+    let calldata: Vec<String> =
+        match relevant_data
+            .get(0)
+            .unwrap()
+            .tree
+            .address_calldata(round, protocol_id, &address)
+        {
+            Ok(v) => v,
+            Err(_) => vec![],
+        };
     let serialized = HttpResponse::Ok().json(calldata);
     serialized
 }

@@ -4,8 +4,7 @@ use defispring::api;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let round: u8 = 1u8; // TODO: maybe take as parameter?
-    update_api_data(round);
+    update_api_data();
 
     HttpServer::new(|| {
         App::new().service(web::resource("/get_calldata").to(api::handler::get_calldata))

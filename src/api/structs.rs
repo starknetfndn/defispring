@@ -12,12 +12,14 @@ pub struct Airdrop {
 pub struct ProtocolAirdrop {
     pub airdrop: Vec<Airdrop>,
     pub protocol_id: u8,
+    pub round: u8,
 }
 
 #[derive(Debug, Clone)]
 pub struct RoundTreeData {
     pub round: u8,
-    pub protocol_trees: HashMap<u8, MerkleTree>,
+    pub protocol_id: u8,
+    pub tree: MerkleTree,
 }
 
 #[derive(Debug, Clone)]

@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn lalalal() {
-        let read_airdrops = read_airdrops(1u8);
+        let read_airdrops = read_airdrops();
         print!("");
     }
 }
