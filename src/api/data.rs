@@ -47,6 +47,50 @@ pub fn update_api_data() {
     *data = all_data;
 }
 
+pub fn get_raw_calldata(round: u8, protocol_id: u8, address: &String) -> Vec<String> {
+    let relevant_data = match get_specific_data(round, protocol_id) {
+        Ok(value) => value,
+        Err(value) => return Vec::new(), // TODO: check error message somehow?
+    };
+
+    let calldata: Vec<String> =
+        match relevant_data
+            .tree
+            .address_calldata(round, protocol_id, &address)
+        {
+            Ok(v) => v,
+            Err(_) => vec![],
+        };
+    calldata
+}
+
+pub fn get_raw_root(round: u8, protocol_id: u8) -> Result<FieldElement, String> {
+    let relevant_data = match get_specific_data(round, protocol_id) {
+        Ok(value) => value,
+        Err(value) => return Err("No data".to_string()), // TODO: check error message somehow?
+    };
+    Ok(relevant_data.tree.root.value)
+}
+
+fn get_specific_data(round: u8, protocol_id: u8) -> Result<RoundTreeData, String> {
+    let round_data = get_all_data();
+    let max_round = round_data.iter().max_by_key(|&p| p.round).unwrap().round;
+    let mut use_round = round;
+    if (use_round == 0_u8) {
+        use_round = max_round;
+    }
+    let relevant_data: Vec<RoundTreeData> = round_data
+        .iter()
+        .filter(|&p| p.protocol_id == protocol_id && p.round == use_round)
+        .cloned()
+        .collect();
+    if (relevant_data.len() != 1) {
+        let none: Vec<String> = Vec::new();
+        return Err("No data available".to_string());
+    }
+    Ok(relevant_data.get(0).unwrap().clone())
+}
+
 #[derive(Debug, Clone)]
 pub struct FileNameInfo {
     full_path: String,

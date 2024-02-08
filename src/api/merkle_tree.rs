@@ -160,7 +160,7 @@ fn build_tree_recursively(tree_builder: TreeBuilder) -> TreeBuilder {
     build_tree_recursively(TreeBuilder::KeepGoing(next_nodes))
 }
 
-fn felt_to_b16(felt: &FieldElement) -> String {
+pub fn felt_to_b16(felt: &FieldElement) -> String {
     format!("{:#x}", felt)
 }
 

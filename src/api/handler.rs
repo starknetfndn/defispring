@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use actix_web::{web, HttpResponse, Responder};
 
-use crate::api::structs::RoundTreeData;
-
-use super::data::get_all_data;
+use super::{
+    data::{get_raw_calldata, get_raw_root},
+    merkle_tree::felt_to_b16,
+};
 
 pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Responder {
     let address = match query.get("address") {
@@ -22,47 +23,52 @@ pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Re
         None => return HttpResponse::BadRequest().finish(),
     };
 
-    let round_data = get_all_data();
-    let max_round = round_data.iter().max_by_key(|&p| p.round).unwrap().round;
-
     // Get the round parameter. Use the max found round if it's not given in query parameters
-    let round = match query.get("round") {
+    let mut round = match query.get("round") {
         Some(v) => {
             let round = match v.parse::<u8>() {
                 Ok(v) => v,
-                Err(_) => max_round,
+                Err(_) => 0_u8,
             };
             round
         }
-        None => max_round,
+        None => 0_u8,
     };
 
-    println!(
-        "round: {:?}, address: {:?}, protocol_id: {:?}",
-        round, address, protocol_id
-    );
+    let calldata = get_raw_calldata(round, address, protocol_id);
 
-    let relevant_data: Vec<RoundTreeData> = round_data
-        .iter()
-        .filter(|&p| p.protocol_id == protocol_id && p.round == round)
-        .cloned()
-        .collect();
-
-    if (relevant_data.len() != 1) {
-        let none: Vec<String> = Vec::new();
-        return HttpResponse::Ok().json(none);
-    }
-
-    let calldata: Vec<String> =
-        match relevant_data
-            .get(0)
-            .unwrap()
-            .tree
-            .address_calldata(round, protocol_id, &address)
-        {
-            Ok(v) => v,
-            Err(_) => vec![],
-        };
     let serialized = HttpResponse::Ok().json(calldata);
+    serialized
+}
+
+pub async fn get_root(query: web::Query<HashMap<String, String>>) -> impl Responder {
+    let protocol_id = match query.get("protocol_id") {
+        Some(v) => {
+            let protocol_id = match v.parse::<u8>() {
+                Ok(v) => v,
+                Err(_) => return HttpResponse::BadRequest().finish(),
+            };
+            protocol_id
+        }
+        None => return HttpResponse::BadRequest().finish(),
+    };
+
+    // Get the round parameter. Use the max found round if it's not given in query parameters
+    let mut round = match query.get("round") {
+        Some(v) => {
+            let round = match v.parse::<u8>() {
+                Ok(v) => v,
+                Err(_) => 0_u8,
+            };
+            round
+        }
+        None => 0_u8,
+    };
+
+    let root = match get_raw_root(round, protocol_id) {
+        Ok(v) => v,
+        Err(_) => return HttpResponse::BadRequest().finish(),
+    };
+    let serialized = HttpResponse::Ok().json(felt_to_b16(&root));
     serialized
 }

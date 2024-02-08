@@ -7,7 +7,9 @@ async fn main() -> std::io::Result<()> {
     update_api_data();
 
     HttpServer::new(|| {
-        App::new().service(web::resource("/get_calldata").to(api::handler::get_calldata))
+        App::new()
+            .service(web::resource("/get_calldata").to(api::handler::get_calldata))
+            .service(web::resource("/get_root").to(api::handler::get_root))
     })
     .bind("127.0.0.1:8080")?
     .run()
