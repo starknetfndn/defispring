@@ -12,7 +12,7 @@ use std::{
     vec,
 };
 
-use super::structs::{Airdrop, MerkleTree, Node, ProtocolAirdrop, RoundTreeData};
+use super::structs::{Airdrop, MerkleTree, RoundTreeData};
 use zip::ZipArchive;
 
 // Use RwLock to allow for mutable access to the data
@@ -31,20 +31,8 @@ pub fn update_api_data() {
     let mut data = ROUND_DATA.write().expect("Failed to acquire write lock");
 
     let drops = read_airdrops();
-    let mut all_data: Vec<RoundTreeData> = Vec::new();
-    // round -> protocol_id -> MerkleTree
-    let mut hashes: HashMap<u8, HashMap<u8, MerkleTree>> = HashMap::new();
-    for drop in drops.iter() {
-        let tree = MerkleTree::new(drop.airdrop.clone());
-        let data = RoundTreeData {
-            round: drop.round,
-            protocol_id: drop.protocol_id,
-            tree: tree,
-        };
-        all_data.push(data);
-    }
 
-    *data = all_data;
+    *data = drops;
 }
 
 pub fn get_raw_calldata(round: u8, protocol_id: u8, address: &String) -> Vec<String> {
@@ -72,6 +60,7 @@ pub fn get_raw_root(round: u8, protocol_id: u8) -> Result<FieldElement, String> 
     Ok(relevant_data.tree.root.value)
 }
 
+// Gets data for a specific round and protocol_id
 fn get_specific_data(round: u8, protocol_id: u8) -> Result<RoundTreeData, String> {
     let round_data = get_all_data();
     let max_round = round_data.iter().max_by_key(|&p| p.round).unwrap().round;
@@ -94,15 +83,14 @@ fn get_specific_data(round: u8, protocol_id: u8) -> Result<RoundTreeData, String
 #[derive(Debug, Clone)]
 pub struct FileNameInfo {
     full_path: String,
-    file_name: String,
     protocol_id: u8,
     round: u8,
 }
 
-// Reads all airdrop info for the given round
-pub fn read_airdrops() -> Vec<ProtocolAirdrop> {
-    let files = extract_valid_files();
-    let mut results: Vec<ProtocolAirdrop> = vec![];
+// Reads all airdrop info for all rounds and all protocols
+pub fn read_airdrops() -> Vec<RoundTreeData> {
+    let files = retrieve_valid_files();
+    let mut results: Vec<RoundTreeData> = vec![];
 
     for file in files.iter() {
         let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
@@ -116,10 +104,11 @@ pub fn read_airdrops() -> Vec<ProtocolAirdrop> {
                 .expect("problem reading zip");
             let airdrop: Vec<Airdrop> = from_slice(&buffer).expect("Failed to deserialize airdrop");
 
-            let protocol_drop = ProtocolAirdrop {
-                airdrop: airdrop,
-                protocol_id: file.protocol_id,
+            let tree = MerkleTree::new(airdrop);
+            let protocol_drop = RoundTreeData {
                 round: file.round,
+                protocol_id: file.protocol_id,
+                tree: tree,
             };
             results.push(protocol_drop);
         }
@@ -127,8 +116,8 @@ pub fn read_airdrops() -> Vec<ProtocolAirdrop> {
     results
 }
 
-// Returns all files that have the correct filename
-fn extract_valid_files() -> Vec<FileNameInfo> {
+// Returns all files that have the correct filename syntax
+fn retrieve_valid_files() -> Vec<FileNameInfo> {
     let mut validFiles: Vec<FileNameInfo> = vec![];
     let path = Path::new("src/raw_input");
 
@@ -137,14 +126,12 @@ fn extract_valid_files() -> Vec<FileNameInfo> {
 
     for entry in path.read_dir().expect("read_dir call failed") {
         if let Ok(entry) = entry {
-            // println!("testing {:?}", entry.file_name().to_str().unwrap());
             if let Some(captures) = regex.captures(entry.file_name().to_str().unwrap()) {
                 if let Some(round) = captures.get(1) {
                     if let Some(protocol_id) = captures.get(2) {
                         // TODO: what to do if filename is not correct?
                         let fileinfo = FileNameInfo {
                             full_path: entry.path().to_str().unwrap().to_string(),
-                            file_name: entry.file_name().to_str().unwrap().to_string(),
                             protocol_id: protocol_id.as_str().parse::<u8>().unwrap(),
                             round: round.as_str().parse::<u8>().unwrap(),
                         };
