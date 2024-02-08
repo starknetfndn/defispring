@@ -1,6 +1,11 @@
 use serde::Deserialize;
 use starknet_crypto::FieldElement;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
+
+/* #[derive(Debug, Clone)]
+pub struct CumulativeInfo {
+    pub cumulative_amounts: HashSet<String, u128>,
+} */
 
 #[derive(Debug, Clone)]
 pub struct RoundTreeData {
@@ -23,6 +28,7 @@ pub struct Node {
     pub value: FieldElement,
 }
 
+// Data coming directly from raw JSONs
 #[derive(Deserialize, Debug, Clone)]
 pub struct Airdrop {
     pub address: String,

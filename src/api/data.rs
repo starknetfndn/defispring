@@ -82,9 +82,9 @@ fn get_specific_data(round: u8, protocol_id: u8) -> Result<RoundTreeData, String
 
 #[derive(Debug, Clone)]
 pub struct FileNameInfo {
-    full_path: String,
-    protocol_id: u8,
     round: u8,
+    protocol_id: u8,
+    full_path: String,
 }
 
 // Reads all airdrop info for all rounds and all protocols
@@ -116,6 +116,18 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
     results
 }
 
+fn calculate_cumulative_amount(mut airdrop: Vec<RoundTreeData>) {
+    for data in airdrop.iter_mut() {
+        for drop in data.tree.airdrops.iter_mut() {
+            let amount = match drop.amount.parse::<u128>() {
+                Ok(value) => value,
+                Err(_) => 0_u128, // FIXME: what to do when data is invalid?
+            };
+            drop.cumulative_amount = amount;
+        }
+    }
+}
+
 // Returns all files that have the correct filename syntax
 fn retrieve_valid_files() -> Vec<FileNameInfo> {
     let mut validFiles: Vec<FileNameInfo> = vec![];
@@ -141,5 +153,11 @@ fn retrieve_valid_files() -> Vec<FileNameInfo> {
             }
         }
     }
+    // Sort 1) by round 2) by protocol_id
+    validFiles.sort_by(|a, b| {
+        a.round
+            .cmp(&b.round)
+            .then_with(|| a.protocol_id.cmp(&b.protocol_id))
+    });
     validFiles
 }
