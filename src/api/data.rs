@@ -35,42 +35,41 @@ pub fn update_api_data() {
     *data = drops;
 }
 
-pub fn get_raw_calldata(round: u8, protocol_id: u8, address: &String) -> Vec<String> {
-    let relevant_data = match get_specific_data(round, protocol_id) {
+pub fn get_raw_calldata(round: u8, address: &String) -> Vec<String> {
+    let relevant_data = match get_round_data(round) {
         Ok(value) => value,
         Err(value) => return Vec::new(), // TODO: check error message somehow?
     };
 
-    let calldata: Vec<String> =
-        match relevant_data
-            .tree
-            .address_calldata(round, protocol_id, &address)
-        {
-            Ok(v) => v,
-            Err(_) => vec![],
-        };
+    let calldata: Vec<String> = match relevant_data.tree.address_calldata(round, &address) {
+        Ok(v) => v,
+        Err(_) => vec![],
+    };
     calldata
 }
 
-pub fn get_raw_root(round: u8, protocol_id: u8) -> Result<FieldElement, String> {
-    let relevant_data = match get_specific_data(round, protocol_id) {
+pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
+    let relevant_data = match get_round_data(round) {
         Ok(value) => value,
-        Err(value) => return Err("No data".to_string()), // TODO: check error message somehow?
+        Err(_) => return Err("No data".to_string()), // TODO: check error message somehow?
     };
     Ok(relevant_data.tree.root.value)
 }
 
 // Gets data for a specific round and protocol_id
-fn get_specific_data(round: u8, protocol_id: u8) -> Result<RoundTreeData, String> {
+fn get_round_data(round: u8) -> Result<RoundTreeData, String> {
     let round_data = get_all_data();
-    let max_round = round_data.iter().max_by_key(|&p| p.round).unwrap().round;
+    let max_round = match round_data.iter().max_by_key(|&p| p.round) {
+        None => return Err("No data".to_string()),
+        Some(p) => p.round,
+    };
     let mut use_round = round;
     if (use_round == 0_u8) {
         use_round = max_round;
     }
     let relevant_data: Vec<RoundTreeData> = round_data
         .iter()
-        .filter(|&p| p.protocol_id == protocol_id && p.round == use_round)
+        .filter(|&p| p.round == use_round)
         .cloned()
         .collect();
     if (relevant_data.len() != 1) {
@@ -83,7 +82,6 @@ fn get_specific_data(round: u8, protocol_id: u8) -> Result<RoundTreeData, String
 #[derive(Debug, Clone)]
 pub struct FileNameInfo {
     round: u8,
-    protocol_id: u8,
     full_path: String,
 }
 
@@ -107,7 +105,6 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
             let tree = MerkleTree::new(airdrop);
             let protocol_drop = RoundTreeData {
                 round: file.round,
-                protocol_id: file.protocol_id,
                 tree: tree,
             };
             results.push(protocol_drop);
@@ -116,7 +113,7 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
     results
 }
 
-fn calculate_cumulative_amount(mut airdrop: Vec<RoundTreeData>) {
+/* fn calculate_cumulative_amount(mut airdrop: Vec<RoundTreeData>) {
     for data in airdrop.iter_mut() {
         for drop in data.tree.airdrops.iter_mut() {
             let amount = match drop.amount.parse::<u128>() {
@@ -126,38 +123,31 @@ fn calculate_cumulative_amount(mut airdrop: Vec<RoundTreeData>) {
             drop.cumulative_amount = amount;
         }
     }
-}
+} */
 
 // Returns all files that have the correct filename syntax
 fn retrieve_valid_files() -> Vec<FileNameInfo> {
     let mut validFiles: Vec<FileNameInfo> = vec![];
     let path = Path::new("src/raw_input");
 
-    let template_pattern = r"^raw_(\d+)_(\d+)\.zip$";
+    let template_pattern = r"^raw_(\d+)\.zip$";
     let regex = Regex::new(&template_pattern).expect("Invalid regex pattern");
 
     for entry in path.read_dir().expect("read_dir call failed") {
         if let Ok(entry) = entry {
             if let Some(captures) = regex.captures(entry.file_name().to_str().unwrap()) {
                 if let Some(round) = captures.get(1) {
-                    if let Some(protocol_id) = captures.get(2) {
-                        // TODO: what to do if filename is not correct?
-                        let fileinfo = FileNameInfo {
-                            full_path: entry.path().to_str().unwrap().to_string(),
-                            protocol_id: protocol_id.as_str().parse::<u8>().unwrap(),
-                            round: round.as_str().parse::<u8>().unwrap(),
-                        };
-                        validFiles.push(fileinfo);
-                    }
+                    // TODO: what to do if filename is not correct?
+                    let fileinfo = FileNameInfo {
+                        full_path: entry.path().to_str().unwrap().to_string(),
+                        round: round.as_str().parse::<u8>().unwrap(),
+                    };
+                    validFiles.push(fileinfo);
                 }
             }
         }
     }
     // Sort 1) by round 2) by protocol_id
-    validFiles.sort_by(|a, b| {
-        a.round
-            .cmp(&b.round)
-            .then_with(|| a.protocol_id.cmp(&b.protocol_id))
-    });
+    validFiles.sort_by(|a, b| a.round.cmp(&b.round));
     validFiles
 }

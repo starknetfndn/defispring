@@ -10,7 +10,6 @@ pub struct CumulativeInfo {
 #[derive(Debug, Clone)]
 pub struct RoundTreeData {
     pub round: u8,
-    pub protocol_id: u8,
     pub tree: MerkleTree,
 }
 
