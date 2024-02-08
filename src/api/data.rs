@@ -48,6 +48,25 @@ pub fn get_raw_calldata(round: u8, address: &String) -> Vec<String> {
     calldata
 }
 
+pub fn get_raw_airdrop_amount(round: u8, address: &String) -> u128 {
+    let relevant_data = match get_round_data(round) {
+        Ok(value) => value,
+        Err(_) => return 0_u128, // TODO: check error message somehow?
+    };
+
+    let drop = match relevant_data
+        .tree
+        .airdrops
+        .iter()
+        .find(|a| &a.address == address)
+    {
+        Some(v) => v,
+        None => return 0_u128,
+    };
+
+    drop.amount.parse::<u128>().unwrap()
+}
+
 pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
@@ -73,7 +92,6 @@ fn get_round_data(round: u8) -> Result<RoundTreeData, String> {
         .cloned()
         .collect();
     if relevant_data.len() != 1 {
-        //  let none: Vec<String> = Vec::new();
         return Err("No data available".to_string());
     }
     Ok(relevant_data.get(0).unwrap().clone())
