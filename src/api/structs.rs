@@ -11,6 +11,7 @@ pub struct CumulativeInfo {
 pub struct RoundTreeData {
     pub round: u8,
     pub tree: MerkleTree,
+    pub cumulative_amounts: HashMap<String, u128>,
 }
 
 #[derive(Debug, Clone)]
