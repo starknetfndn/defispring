@@ -9,6 +9,7 @@ cairo-version = "2.5.0"
 [dependencies]
 starknet = ">=1.5.0"
 openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.9.0" }
+alexandria_merkle_tree = { git = "https://github.com/keep-starknet-strange/alexandria.git" }
 
 [[target.starknet-contract]]
 allowed-libfuncs-list.name = "audited"

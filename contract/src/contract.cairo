@@ -25,7 +25,7 @@ mod Distributor {
     use distributor::contract::IDistributor;
     use starknet::ContractAddress;
     use core::array::{ArrayTrait, SpanTrait};
-    use distributor::merkle_tree::{
+    use alexandria_merkle_tree::merkle_tree::{
         Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
     };
     use core::hash::LegacyHash;
