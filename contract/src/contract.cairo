@@ -20,7 +20,9 @@ pub trait IDistributor<TContractState> {
         proof: Span::<felt252>
     ) -> felt252;
 
-    fn amount_already_claimed(self: @TContractState, claimee: ContractAddress, protocol: u8);
+    fn amount_already_claimed(
+        self: @TContractState, claimee: ContractAddress, protocol: u8
+    ) -> u128;
 
     fn roots_for_protocol(self: @TContractState, protocol: u8) -> Span<felt252>;
 }
@@ -37,6 +39,8 @@ mod Distributor {
     };
     use core::hash::LegacyHash;
 
+    const STRK_ADDRESS: felt252 = 0x1234;
+
     #[storage]
     struct Storage {
         airdrop_claimed: LegacyMap::<(u8, ContractAddress), u128>,
@@ -44,11 +48,35 @@ mod Distributor {
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress) {// TODO: upgradability and ownership
+    fn constructor(
+        ref self: ContractState, owner: ContractAddress
+    ) { // TODO: upgradability and ownership
     // self.ownable.initializer(owner);
     }
 
-    // TODO events
+    #[derive(Drop, starknet::Event)]
+    #[event]
+    enum Event {
+        Claimed: Claimed
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct Claimed {
+        claimee: ContractAddress,
+        protocol: u8,
+        amount: u128
+    }
+
+    fn get_first_free_slot(self: @ContractState, protocol: u8) -> u64 {
+        let mut i = 0;
+        let mut root = self.merkle_roots_per_protocol.read((protocol, i));
+
+        while root != 0 {
+            i += 1;
+            root = self.merkle_roots_per_protocol.read((protocol, i));
+        };
+        i
+    }
 
     #[abi(embed_v0)]
     impl Distributor of super::IDistributor<ContractState> {
@@ -66,9 +94,12 @@ mod Distributor {
             loop {
                 if (*roots.at(i) == root) {
                     let token = distributor::erc20::IERC20Dispatcher {
-                        contract_address: 0x1234.try_into().unwrap()
+                        contract_address: STRK_ADDRESS.try_into().unwrap()
                     };
-                    token.transfer(claimee, u256 { high: 0, low: amount });
+                    let left_to_claim = amount - self.airdrop_claimed.read((protocol, claimee));
+                    token.transfer(claimee, u256 { high: 0, low: left_to_claim });
+                    self.airdrop_claimed.write((protocol, claimee), amount);
+                    self.emit(Claimed { claimee, protocol, amount });
                     break;
                 }
                 assert(i < roots.len(), 'INVALID PROOF');
@@ -89,17 +120,24 @@ mod Distributor {
             merkle_tree.compute_root(leaf, proof)
         }
 
-        fn add_root(ref self: ContractState, protocol: u8, new_root: felt252) {// TODO
+        fn add_root(ref self: ContractState, protocol: u8, new_root: felt252) {
+            // TODO assert owner
+            let slot = get_first_free_slot(@self, protocol);
+            self.merkle_roots_per_protocol.write((protocol, slot), new_root);
         }
 
-        fn amount_already_claimed(self: @ContractState, claimee: ContractAddress, protocol: u8) {// TODO
+        fn amount_already_claimed(
+            self: @ContractState, claimee: ContractAddress, protocol: u8
+        ) -> u128 {
+            self.airdrop_claimed.read((protocol, claimee))
         }
 
         fn roots_for_protocol(self: @ContractState, protocol: u8) -> Span<felt252> {
             let mut res: Array<felt252> = ArrayTrait::new();
             let mut i: u64 = 0;
-            loop { // maybe use the shiny new while loop? :)
+            loop {
                 let curr_root: felt252 = self.merkle_roots_per_protocol.read((protocol, i));
+                i += 1;
                 if (curr_root == 0) {
                     break;
                 }
