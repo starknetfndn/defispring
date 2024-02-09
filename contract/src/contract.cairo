@@ -20,7 +20,7 @@ pub trait IDistributor<TContractState> {
 #[starknet::contract]
 mod Distributor {
     use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait;
-    use distributor::erc20::IERC20DispatcherTrait;
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use core::traits::TryInto;
     use distributor::contract::IDistributor;
     use starknet::ContractAddress;
@@ -83,7 +83,7 @@ mod Distributor {
             let mut i = 0;
             loop {
                 if (*roots.at(i) == root) {
-                    let token = distributor::erc20::IERC20Dispatcher {
+                    let token = IERC20Dispatcher {
                         contract_address: STRK_ADDRESS.try_into().unwrap()
                     };
                     let left_to_claim = amount - self.airdrop_claimed.read(claimee);
