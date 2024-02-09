@@ -180,12 +180,12 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundCumulativeMap
                 .entry(data.address.clone())
                 .or_insert_with(|| 0) += amount;
         }
-        let aaa = RoundCumulativeMaps {
+        let map = RoundCumulativeMaps {
             round: airdrop.round,
             cumulative_amounts: all_rounds_cums.clone(),
         };
 
-        round_maps.push(aaa);
+        round_maps.push(map);
     }
     round_maps
 }
