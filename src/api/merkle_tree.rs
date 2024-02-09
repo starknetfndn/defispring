@@ -1,7 +1,7 @@
 use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashSet, str::FromStr, vec};
 
-use super::structs::{Airdrop, MerkleTree, Node};
+use super::structs::{CumulativeAirdrop, MerkleTree, Node};
 
 pub fn strip_leading_zeroes(hex: &str) -> String {
     if hex.len() <= 3 || &hex[..2] != "0x" {
@@ -19,7 +19,7 @@ pub fn strip_leading_zeroes(hex: &str) -> String {
 }
 
 impl MerkleTree {
-    pub fn new(airdrops: Vec<Airdrop>) -> Self {
+    pub fn new(airdrops: Vec<CumulativeAirdrop>) -> Self {
         let mut leaves: Vec<Node> = airdrops
             .clone()
             .into_iter()
@@ -35,6 +35,7 @@ impl MerkleTree {
 
         MerkleTree { root, airdrops }
     }
+
     pub fn address_calldata(&self, round: u8, address: &str) -> Result<Vec<String>, ()> {
         let felt_address = match FieldElement::from_str(address) {
             Ok(v) => v,
@@ -71,7 +72,7 @@ impl MerkleTree {
 
         let round = FieldElement::from(round);
         let address = FieldElement::from_str(&airdrop.address).unwrap();
-        let amount = FieldElement::from_str(&airdrop.amount).unwrap();
+        let amount = FieldElement::from(airdrop.cumulative_amount);
 
         let mut calldata = vec![round, address, amount];
         calldata.append(&mut hashes);
@@ -99,11 +100,11 @@ impl Node {
             value,
         }
     }
-    fn new_leaf(airdrop: Airdrop) -> Self {
+    fn new_leaf(airdrop: CumulativeAirdrop) -> Self {
         let address = FieldElement::from_str(&strip_leading_zeroes(&airdrop.address)).unwrap();
-        let amount = FieldElement::from_str(&airdrop.amount).unwrap();
+        let cumulated_amount = FieldElement::from(airdrop.cumulative_amount);
         // keep order address, amount (cannot use fn hash)
-        let value = pedersen_hash(&address, &amount);
+        let value = pedersen_hash(&address, &cumulated_amount);
 
         Node {
             left_child: None,
