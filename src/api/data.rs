@@ -12,7 +12,7 @@ use std::{
     vec,
 };
 
-use super::structs::{Airdrop, MerkleTree, RoundTreeData};
+use super::structs::{CumulativeAirdrop, JSONAirdrop, MerkleTree, RoundTreeData};
 use zip::ZipArchive;
 
 // Use RwLock to allow for mutable access to the data
@@ -72,7 +72,7 @@ pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
         Ok(value) => value,
         Err(_) => return Err("No data".to_string()), // TODO: check error message somehow?
     };
-    Ok(relevant_data.tree.root.value)
+    Ok(relevant_data.tree.root.cumulated_amount)
 }
 
 // Gets data for a specific round
@@ -107,6 +107,7 @@ pub struct FileNameInfo {
 pub fn read_airdrops() -> Vec<RoundTreeData> {
     let files = retrieve_valid_files();
     let mut results: Vec<RoundTreeData> = vec![];
+    let mut cumulativeAirdrops: Vec<CumulativeAirdrop> = vec![];
 
     for file in files.iter() {
         let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
@@ -118,18 +119,28 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
             archive_file
                 .read_to_end(&mut buffer)
                 .expect("problem reading zip");
-            let airdrop: Vec<Airdrop> = from_slice(&buffer).expect("Failed to deserialize airdrop");
+            let airdrop: Vec<JSONAirdrop> =
+                from_slice(&buffer).expect("Failed to deserialize airdrop");
 
-            let tree = MerkleTree::new(airdrop);
+            /* let tree = MerkleTree::new(airdrop);
             let round_drop = RoundTreeData {
                 round: file.round,
                 tree: tree,
                 cumulative_amounts: HashMap::new(),
             };
-            results.push(round_drop);
+            results.push(round_drop); */
         }
     }
     results
+}
+
+pub fn transform_json_airdrops_to_cumulative_airdrops(
+    airdrops: Vec<JSONAirdrop>,
+) -> Vec<CumulativeAirdrop> {
+    airdrops.sort_by(|a, b| a.round.cmp(&b.round));
+    let mut all_rounds_cums: HashMap<String, u128> = HashMap::new();
+
+    for data in airdrops.iter() {}
 }
 
 pub fn calculate_cumulative_amount(airdrop: &mut Vec<RoundTreeData>) {

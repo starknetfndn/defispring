@@ -1,7 +1,7 @@
 use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashSet, str::FromStr, vec};
 
-use super::structs::{Airdrop, MerkleTree, Node};
+use super::structs::{CumulativeAirdrop, MerkleTree, Node};
 
 pub fn strip_leading_zeroes(hex: &str) -> String {
     if hex.len() <= 3 || &hex[..2] != "0x" {
@@ -19,7 +19,7 @@ pub fn strip_leading_zeroes(hex: &str) -> String {
 }
 
 impl MerkleTree {
-    pub fn new(airdrops: Vec<Airdrop>) -> Self {
+    pub fn new(airdrops: Vec<CumulativeAirdrop>) -> Self {
         let mut leaves: Vec<Node> = airdrops
             .clone()
             .into_iter()
@@ -50,10 +50,10 @@ impl MerkleTree {
             let left = current_node.left_child.as_ref().unwrap();
             let right = current_node.right_child.as_ref().unwrap();
             if left.accessible_addresses.contains(&felt_address) {
-                hashes.push(right.value);
+                hashes.push(right.cumulated_amount);
                 current_node = left;
             } else {
-                hashes.push(left.value);
+                hashes.push(left.cumulated_amount);
                 current_node = right;
             }
             if current_node.left_child.is_none() {
@@ -71,7 +71,7 @@ impl MerkleTree {
 
         let round = FieldElement::from(round);
         let address = FieldElement::from_str(&airdrop.address).unwrap();
-        let amount = FieldElement::from_str(&airdrop.amount).unwrap();
+        let amount = FieldElement::from_str(&airdrop.cumulative_amount).unwrap();
 
         let mut calldata = vec![round, address, amount];
         calldata.append(&mut hashes);
@@ -83,11 +83,11 @@ impl MerkleTree {
 
 impl Node {
     fn new(a: Node, b: Node) -> Self {
-        let (left_child, right_child) = match a.value.lt(&b.value) {
+        let (left_child, right_child) = match a.cumulated_amount.lt(&b.cumulated_amount) {
             true => (a, b),
             false => (b, a),
         };
-        let value = hash(&left_child.value, &right_child.value);
+        let cumulated_amount = hash(&left_child.cumulated_amount, &right_child.cumulated_amount);
         let mut accessible_addresses = HashSet::new();
         accessible_addresses.extend(left_child.accessible_addresses.clone());
         accessible_addresses.extend(right_child.accessible_addresses.clone());
@@ -96,20 +96,20 @@ impl Node {
             left_child: Some(Box::new(left_child)),
             right_child: Some(Box::new(right_child)),
             accessible_addresses,
-            value,
+            cumulated_amount,
         }
     }
-    fn new_leaf(airdrop: Airdrop) -> Self {
+    fn new_leaf(airdrop: CumulativeAirdrop) -> Self {
         let address = FieldElement::from_str(&strip_leading_zeroes(&airdrop.address)).unwrap();
-        let amount = FieldElement::from_str(&airdrop.amount).unwrap();
+        let cumulated_amount = FieldElement::from_str(&airdrop.cumulative_amount).unwrap();
         // keep order address, amount (cannot use fn hash)
-        let value = pedersen_hash(&address, &amount);
+        let value = pedersen_hash(&address, &cumulated_amount);
 
         Node {
             left_child: None,
             right_child: None,
             accessible_addresses: vec![address].into_iter().collect(),
-            value,
+            cumulated_amount,
         }
     }
 }

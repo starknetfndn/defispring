@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use defispring::api::{
     data::{calculate_cumulative_amount, read_airdrops},
-    structs::{Airdrop, MerkleTree, RoundTreeData},
+    structs::{JSONAirdrop, MerkleTree, RoundTreeData},
 };
 
 // mockup of a function that will be used in the SC
@@ -94,16 +94,16 @@ fn fail_with_calldata_tempering() {
 
 #[test]
 fn hmm() {
-    let mut drop: Vec<Airdrop> = vec![];
-    drop.push(Airdrop {
+    let mut drop: Vec<JSONAirdrop> = vec![];
+    drop.push(JSONAirdrop {
         address: "0x1".to_string(),
         amount: "5".to_string(),
     });
-    drop.push(Airdrop {
+    drop.push(JSONAirdrop {
         address: "0x2".to_string(),
         amount: "6".to_string(),
     });
-    drop.push(Airdrop {
+    drop.push(JSONAirdrop {
         address: "0x3".to_string(),
         amount: "7".to_string(),
     });

@@ -2,21 +2,21 @@ use std::collections::HashMap;
 
 use defispring::api::{
     data::calculate_cumulative_amount,
-    structs::{Airdrop, MerkleTree, RoundTreeData},
+    structs::{JSONAirdrop, MerkleTree, RoundTreeData},
 };
 
 #[test]
 fn test_cumulative_one_round() {
-    let mut drop: Vec<Airdrop> = vec![];
-    drop.push(Airdrop {
+    let mut drop: Vec<JSONAirdrop> = vec![];
+    drop.push(JSONAirdrop {
         address: "0x1".to_string(),
         amount: "5".to_string(),
     });
-    drop.push(Airdrop {
+    drop.push(JSONAirdrop {
         address: "0x2".to_string(),
         amount: "6".to_string(),
     });
-    drop.push(Airdrop {
+    drop.push(JSONAirdrop {
         address: "0x3".to_string(),
         amount: "7".to_string(),
     });
@@ -36,21 +36,21 @@ fn test_cumulative_one_round() {
 
 #[test]
 fn test_cumulative_two_rounds() {
-    let mut drop1: Vec<Airdrop> = vec![];
-    let mut drop2: Vec<Airdrop> = vec![];
-    drop1.push(Airdrop {
+    let mut drop1: Vec<JSONAirdrop> = vec![];
+    let mut drop2: Vec<JSONAirdrop> = vec![];
+    drop1.push(JSONAirdrop {
         address: "0x1".to_string(),
         amount: "5".to_string(),
     });
-    drop1.push(Airdrop {
+    drop1.push(JSONAirdrop {
         address: "0x2".to_string(),
         amount: "6".to_string(),
     });
-    drop1.push(Airdrop {
+    drop1.push(JSONAirdrop {
         address: "0x3".to_string(),
         amount: "7".to_string(),
     });
-    drop2.push(Airdrop {
+    drop2.push(JSONAirdrop {
         address: "0x3".to_string(),
         amount: "23".to_string(),
     });
@@ -79,26 +79,26 @@ fn test_cumulative_two_rounds() {
 
 #[test]
 fn test_cumulative_three_rounds() {
-    let mut drop1: Vec<Airdrop> = vec![];
-    let mut drop2: Vec<Airdrop> = vec![];
-    let mut drop3: Vec<Airdrop> = vec![];
-    drop1.push(Airdrop {
+    let mut drop1: Vec<JSONAirdrop> = vec![];
+    let mut drop2: Vec<JSONAirdrop> = vec![];
+    let mut drop3: Vec<JSONAirdrop> = vec![];
+    drop1.push(JSONAirdrop {
         address: "0x1".to_string(),
         amount: "5".to_string(),
     });
-    drop1.push(Airdrop {
+    drop1.push(JSONAirdrop {
         address: "0x2".to_string(),
         amount: "6".to_string(),
     });
-    drop1.push(Airdrop {
+    drop1.push(JSONAirdrop {
         address: "0x3".to_string(),
         amount: "7".to_string(),
     });
-    drop2.push(Airdrop {
+    drop2.push(JSONAirdrop {
         address: "0x3".to_string(),
         amount: "23".to_string(),
     });
-    drop3.push(Airdrop {
+    drop3.push(JSONAirdrop {
         address: "0x2".to_string(),
         amount: "33".to_string(),
     });
