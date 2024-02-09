@@ -35,6 +35,7 @@ impl MerkleTree {
 
         MerkleTree { root, airdrops }
     }
+
     pub fn address_calldata(&self, round: u8, address: &str) -> Result<Vec<String>, ()> {
         let felt_address = match FieldElement::from_str(address) {
             Ok(v) => v,
@@ -50,10 +51,10 @@ impl MerkleTree {
             let left = current_node.left_child.as_ref().unwrap();
             let right = current_node.right_child.as_ref().unwrap();
             if left.accessible_addresses.contains(&felt_address) {
-                hashes.push(right.cumulated_amount);
+                hashes.push(right.value);
                 current_node = left;
             } else {
-                hashes.push(left.cumulated_amount);
+                hashes.push(left.value);
                 current_node = right;
             }
             if current_node.left_child.is_none() {
@@ -71,7 +72,7 @@ impl MerkleTree {
 
         let round = FieldElement::from(round);
         let address = FieldElement::from_str(&airdrop.address).unwrap();
-        let amount = FieldElement::from_str(&airdrop.cumulative_amount).unwrap();
+        let amount = FieldElement::from(airdrop.cumulative_amount);
 
         let mut calldata = vec![round, address, amount];
         calldata.append(&mut hashes);
@@ -83,11 +84,11 @@ impl MerkleTree {
 
 impl Node {
     fn new(a: Node, b: Node) -> Self {
-        let (left_child, right_child) = match a.cumulated_amount.lt(&b.cumulated_amount) {
+        let (left_child, right_child) = match a.value.lt(&b.value) {
             true => (a, b),
             false => (b, a),
         };
-        let cumulated_amount = hash(&left_child.cumulated_amount, &right_child.cumulated_amount);
+        let value = hash(&left_child.value, &right_child.value);
         let mut accessible_addresses = HashSet::new();
         accessible_addresses.extend(left_child.accessible_addresses.clone());
         accessible_addresses.extend(right_child.accessible_addresses.clone());
@@ -96,12 +97,12 @@ impl Node {
             left_child: Some(Box::new(left_child)),
             right_child: Some(Box::new(right_child)),
             accessible_addresses,
-            cumulated_amount,
+            value,
         }
     }
     fn new_leaf(airdrop: CumulativeAirdrop) -> Self {
         let address = FieldElement::from_str(&strip_leading_zeroes(&airdrop.address)).unwrap();
-        let cumulated_amount = FieldElement::from_str(&airdrop.cumulative_amount).unwrap();
+        let cumulated_amount = FieldElement::from(airdrop.cumulative_amount);
         // keep order address, amount (cannot use fn hash)
         let value = pedersen_hash(&address, &cumulated_amount);
 
@@ -109,7 +110,7 @@ impl Node {
             left_child: None,
             right_child: None,
             accessible_addresses: vec![address].into_iter().collect(),
-            cumulated_amount,
+            value,
         }
     }
 }

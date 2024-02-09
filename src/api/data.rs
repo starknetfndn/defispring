@@ -3,7 +3,7 @@ use regex::Regex;
 use serde_json::from_slice;
 use starknet_crypto::FieldElement;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{hash_map::Entry, HashMap, HashSet},
     fs::File,
     io::Read,
     path::{Path, PathBuf},
@@ -12,7 +12,9 @@ use std::{
     vec,
 };
 
-use super::structs::{CumulativeAirdrop, JSONAirdrop, MerkleTree, RoundTreeData};
+use super::structs::{
+    CumulativeAirdrop, FileNameInfo, JSONAirdrop, MerkleTree, RoundAmounts, RoundTreeData,
+};
 use zip::ZipArchive;
 
 // Use RwLock to allow for mutable access to the data
@@ -64,7 +66,7 @@ pub fn get_raw_airdrop_amount(round: u8, address: &String) -> u128 {
         None => return 0_u128,
     };
 
-    drop.amount.parse::<u128>().unwrap()
+    drop.cumulative_amount
 }
 
 pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
@@ -72,7 +74,7 @@ pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
         Ok(value) => value,
         Err(_) => return Err("No data".to_string()), // TODO: check error message somehow?
     };
-    Ok(relevant_data.tree.root.cumulated_amount)
+    Ok(relevant_data.tree.root.value)
 }
 
 // Gets data for a specific round
@@ -97,17 +99,12 @@ fn get_round_data(round: u8) -> Result<RoundTreeData, String> {
     Ok(relevant_data.get(0).unwrap().clone())
 }
 
-#[derive(Debug, Clone)]
-pub struct FileNameInfo {
-    round: u8,
-    full_path: String,
-}
-
-// Reads all airdrop info for all rounds
+// Reads and accumulates all airdrop info for all rounds
 pub fn read_airdrops() -> Vec<RoundTreeData> {
     let files = retrieve_valid_files();
-    let mut results: Vec<RoundTreeData> = vec![];
-    let mut cumulativeAirdrops: Vec<CumulativeAirdrop> = vec![];
+    //let mut results: Vec<RoundTreeData> = vec![];
+    let mut round_amounts: Vec<RoundAmounts> = vec![];
+    //let mut cumulativeAirdrops: Vec<CumulativeAirdrop> = vec![];
 
     for file in files.iter() {
         let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
@@ -122,59 +119,96 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
             let airdrop: Vec<JSONAirdrop> =
                 from_slice(&buffer).expect("Failed to deserialize airdrop");
 
-            /* let tree = MerkleTree::new(airdrop);
-            let round_drop = RoundTreeData {
+            let round_amount = RoundAmounts {
+                amounts: airdrop.clone(),
                 round: file.round,
-                tree: tree,
-                cumulative_amounts: HashMap::new(),
             };
-            results.push(round_drop); */
+            round_amounts.push(round_amount);
         }
     }
-    results
+    transform_airdrops_to_cumulative_rounds(round_amounts)
 }
 
-pub fn transform_json_airdrops_to_cumulative_airdrops(
-    airdrops: Vec<JSONAirdrop>,
-) -> Vec<CumulativeAirdrop> {
+struct RoundCumulativeMaps {
+    round: u8,
+    cumulative_amounts: HashMap<String, u128>,
+}
+
+/// Converts JSON airdrop data into cumulative tree+data per round
+pub fn transform_airdrops_to_cumulative_rounds(
+    mut airdrops: Vec<RoundAmounts>,
+) -> Vec<RoundTreeData> {
     airdrops.sort_by(|a, b| a.round.cmp(&b.round));
-    let mut all_rounds_cums: HashMap<String, u128> = HashMap::new();
 
-    for data in airdrops.iter() {}
+    let cumulative_amount_maps = map_cumulative_amounts(airdrops);
+
+    let mut rounds: Vec<RoundTreeData> = Vec::new();
+    for cum_map in cumulative_amount_maps.iter() {
+        let mut curr_round_data: Vec<CumulativeAirdrop> = Vec::new();
+        for key in cum_map.cumulative_amounts.keys() {
+            let address_cumulative = CumulativeAirdrop {
+                address: key.to_string(),
+                cumulative_amount: cum_map.cumulative_amounts[key],
+            };
+            curr_round_data.push(address_cumulative);
+        }
+        let tree = MerkleTree::new(curr_round_data);
+
+        let round_drop = RoundTreeData {
+            round: cum_map.round,
+            tree: tree,
+        };
+        rounds.push(round_drop);
+    }
+
+    rounds
 }
 
-pub fn calculate_cumulative_amount(airdrop: &mut Vec<RoundTreeData>) {
-    airdrop.sort_by(|a, b| a.round.cmp(&b.round));
-
+/// Converts JSON airdrop data into cumulative map-per-round data
+fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundCumulativeMaps> {
     let mut all_rounds_cums: HashMap<String, u128> = HashMap::new();
+    let mut round_maps: Vec<RoundCumulativeMaps> = Vec::new();
 
-    for data in airdrop.iter_mut() {
-        for drop in data.tree.airdrops.iter_mut() {
-            let amount = match drop.amount.parse::<u128>() {
+    for airdrop in airdrops.iter() {
+        for data in airdrop.amounts.iter() {
+            let amount = match data.amount.parse::<u128>() {
                 Ok(value) => value,
                 Err(_) => 0_u128, // FIXME: what to do when data is invalid?
             };
 
-            let current_amount = all_rounds_cums
-                .entry(drop.address.clone())
-                .or_insert(0_u128);
+            *all_rounds_cums
+                .entry(data.address.clone())
+                .or_insert_with(|| 0) += amount;
+        }
+        let aaa = RoundCumulativeMaps {
+            round: airdrop.round,
+            cumulative_amounts: all_rounds_cums.clone(),
+        };
 
-            *current_amount += amount;
-        }
-        // Take a snapshot of the current status and set or this round
-        data.cumulative_amounts = all_rounds_cums.clone();
+        round_maps.push(aaa);
     }
-    /*    for data in airdrop.iter() {
-        for (address, cumulative_amount) in &data.cumulative_amounts {
-            println!(
-                "Round: {}, Address: {}, Cumulative Amount: {}",
-                data.round, address, cumulative_amount
-            );
-        }
-    } */
+    round_maps
 }
 
-// Returns all files that have the correct filename syntax
+impl RoundTreeData {
+    pub fn address_amount(&self, address: &str) -> Result<u128, String> {
+        let address_drop: Vec<CumulativeAirdrop> = self
+            .tree
+            .airdrops
+            .iter()
+            .filter(|a| &a.address == address)
+            .cloned()
+            .collect();
+
+        if address_drop.len() == 0 {
+            return Err("Address not found".to_string());
+        } else {
+            Ok(address_drop.get(0).unwrap().cumulative_amount)
+        }
+    }
+}
+
+/// Returns all files that have the correct filename syntax
 fn retrieve_valid_files() -> Vec<FileNameInfo> {
     let mut valid_files: Vec<FileNameInfo> = vec![];
     let path = Path::new("src/raw_input");

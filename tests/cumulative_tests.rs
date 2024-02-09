@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use defispring::api::{
-    data::calculate_cumulative_amount,
-    structs::{JSONAirdrop, MerkleTree, RoundTreeData},
+    data::transform_airdrops_to_cumulative_rounds,
+    structs::{JSONAirdrop, MerkleTree, RoundAmounts, RoundTreeData},
 };
 
 #[test]
@@ -21,17 +21,16 @@ fn test_cumulative_one_round() {
         amount: "7".to_string(),
     });
 
-    let mut round_data: Vec<RoundTreeData> = Vec::new();
-    round_data.push(RoundTreeData {
+    let mut round_data: Vec<RoundAmounts> = Vec::new();
+    round_data.push(RoundAmounts {
         round: 1u8,
-        tree: MerkleTree::new(drop),
-        cumulative_amounts: HashMap::new(),
+        amounts: drop,
     });
-    calculate_cumulative_amount(&mut round_data);
+    let res = transform_airdrops_to_cumulative_rounds(round_data);
 
-    assert!(round_data[0].cumulative_amounts[&"0x1".to_string()] == 5_u128);
-    assert!(round_data[0].cumulative_amounts[&"0x2".to_string()] == 6_u128);
-    assert!(round_data[0].cumulative_amounts[&"0x3".to_string()] == 7_u128);
+    assert!(res[0].address_amount("0x1").unwrap() == 5_u128);
+    assert!(res[0].address_amount("0x2").unwrap() == 6_u128);
+    assert!(res[0].address_amount("0x3").unwrap() == 7_u128);
 }
 
 #[test]
@@ -55,26 +54,24 @@ fn test_cumulative_two_rounds() {
         amount: "23".to_string(),
     });
 
-    let mut round_data: Vec<RoundTreeData> = Vec::new();
-    round_data.push(RoundTreeData {
+    let mut round_data: Vec<RoundAmounts> = Vec::new();
+    round_data.push(RoundAmounts {
         round: 1u8,
-        tree: MerkleTree::new(drop1),
-        cumulative_amounts: HashMap::new(),
+        amounts: drop1,
     });
-    round_data.push(RoundTreeData {
+    round_data.push(RoundAmounts {
         round: 2u8,
-        tree: MerkleTree::new(drop2),
-        cumulative_amounts: HashMap::new(),
+        amounts: drop2,
     });
-    calculate_cumulative_amount(&mut round_data);
+    let res = transform_airdrops_to_cumulative_rounds(round_data);
 
-    assert!(round_data[0].cumulative_amounts[&"0x1".to_string()] == 5_u128);
-    assert!(round_data[0].cumulative_amounts[&"0x2".to_string()] == 6_u128);
-    assert!(round_data[0].cumulative_amounts[&"0x3".to_string()] == 7_u128);
+    assert!(res[0].address_amount("0x1").unwrap() == 5_u128);
+    assert!(res[0].address_amount("0x2").unwrap() == 6_u128);
+    assert!(res[0].address_amount("0x3").unwrap() == 7_u128);
 
-    assert!(round_data[1].cumulative_amounts[&"0x1".to_string()] == 5_u128);
-    assert!(round_data[1].cumulative_amounts[&"0x2".to_string()] == 6_u128);
-    assert!(round_data[1].cumulative_amounts[&"0x3".to_string()] == 30_u128);
+    assert!(res[1].address_amount("0x1").unwrap() == 5_u128);
+    assert!(res[1].address_amount("0x2").unwrap() == 6_u128);
+    assert!(res[1].address_amount("0x3").unwrap() == 30_u128);
 }
 
 #[test]
@@ -103,33 +100,30 @@ fn test_cumulative_three_rounds() {
         amount: "33".to_string(),
     });
 
-    let mut round_data: Vec<RoundTreeData> = Vec::new();
-    round_data.push(RoundTreeData {
+    let mut round_data: Vec<RoundAmounts> = Vec::new();
+    round_data.push(RoundAmounts {
         round: 1u8,
-        tree: MerkleTree::new(drop1),
-        cumulative_amounts: HashMap::new(),
+        amounts: drop1,
     });
-    round_data.push(RoundTreeData {
+    round_data.push(RoundAmounts {
         round: 2u8,
-        tree: MerkleTree::new(drop2),
-        cumulative_amounts: HashMap::new(),
+        amounts: drop2,
     });
-    round_data.push(RoundTreeData {
+    round_data.push(RoundAmounts {
         round: 3u8,
-        tree: MerkleTree::new(drop3),
-        cumulative_amounts: HashMap::new(),
+        amounts: drop3,
     });
-    calculate_cumulative_amount(&mut round_data);
+    let res = transform_airdrops_to_cumulative_rounds(round_data);
 
-    assert!(round_data[0].cumulative_amounts[&"0x1".to_string()] == 5_u128);
-    assert!(round_data[0].cumulative_amounts[&"0x2".to_string()] == 6_u128);
-    assert!(round_data[0].cumulative_amounts[&"0x3".to_string()] == 7_u128);
+    assert!(res[0].address_amount("0x1").unwrap() == 5_u128);
+    assert!(res[0].address_amount("0x2").unwrap() == 6_u128);
+    assert!(res[0].address_amount("0x3").unwrap() == 7_u128);
 
-    assert!(round_data[1].cumulative_amounts[&"0x1".to_string()] == 5_u128);
-    assert!(round_data[1].cumulative_amounts[&"0x2".to_string()] == 6_u128);
-    assert!(round_data[1].cumulative_amounts[&"0x3".to_string()] == 30_u128);
+    assert!(res[1].address_amount("0x1").unwrap() == 5_u128);
+    assert!(res[1].address_amount("0x2").unwrap() == 6_u128);
+    assert!(res[1].address_amount("0x3").unwrap() == 30_u128);
 
-    assert!(round_data[2].cumulative_amounts[&"0x1".to_string()] == 5_u128);
-    assert!(round_data[2].cumulative_amounts[&"0x2".to_string()] == 39_u128);
-    assert!(round_data[2].cumulative_amounts[&"0x3".to_string()] == 30_u128);
+    assert!(res[2].address_amount("0x1").unwrap() == 5_u128);
+    assert!(res[2].address_amount("0x2").unwrap() == 39_u128);
+    assert!(res[2].address_amount("0x3").unwrap() == 30_u128);
 }

@@ -2,7 +2,7 @@ use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashMap, str::FromStr};
 
 use defispring::api::{
-    data::{calculate_cumulative_amount, read_airdrops},
+    data::read_airdrops,
     structs::{JSONAirdrop, MerkleTree, RoundTreeData},
 };
 
@@ -91,7 +91,7 @@ fn fail_with_calldata_tempering() {
         assert!(!cairo_root_generating(calldata, root.clone()));
     }
 } */
-
+/*
 #[test]
 fn hmm() {
     let mut drop: Vec<JSONAirdrop> = vec![];
@@ -110,4 +110,4 @@ fn hmm() {
     let mt = MerkleTree::new(drop);
     /*  let aaaa = mt.address_calldata("0x1");
     print!(""); */
-}
+} */
