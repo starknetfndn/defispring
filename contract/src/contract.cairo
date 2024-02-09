@@ -29,7 +29,8 @@ pub trait IDistributor<TContractState> {
 
 #[starknet::contract]
 mod Distributor {
-    use distributor::erc20::IERC20DispatcherTrait;
+    use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait;
+use distributor::erc20::IERC20DispatcherTrait;
     use core::traits::TryInto;
     use distributor::contract::IDistributor;
     use starknet::ContractAddress;
@@ -38,26 +39,30 @@ mod Distributor {
         Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
     };
     use core::hash::LegacyHash;
+    use openzeppelin::access::ownable::ownable::OwnableComponent;
 
     const STRK_ADDRESS: felt252 = 0x1234;
 
     #[storage]
     struct Storage {
         airdrop_claimed: LegacyMap::<(u8, ContractAddress), u128>,
-        merkle_roots_per_protocol: LegacyMap::<(u8, u64), felt252> // (protocol, round)
+        merkle_roots_per_protocol: LegacyMap::<(u8, u64), felt252>, // (protocol, round)
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
     }
 
     #[constructor]
     fn constructor(
         ref self: ContractState, owner: ContractAddress
-    ) { // TODO: upgradability and ownership
-    // self.ownable.initializer(owner);
+    ) {
+        self.ownable.initializer(owner);
     }
 
     #[derive(Drop, starknet::Event)]
     #[event]
     enum Event {
-        Claimed: Claimed
+        Claimed: Claimed,
+        OwnableEvent: OwnableComponent::Event
     }
 
     #[derive(Drop, starknet::Event)]
@@ -66,6 +71,8 @@ mod Distributor {
         protocol: u8,
         amount: u128
     }
+
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
     fn get_first_free_slot(self: @ContractState, protocol: u8) -> u64 {
         let mut i = 0;
@@ -121,7 +128,7 @@ mod Distributor {
         }
 
         fn add_root(ref self: ContractState, protocol: u8, new_root: felt252) {
-            // TODO assert owner
+            self.ownable.assert_only_owner();
             let slot = get_first_free_slot(@self, protocol);
             self.merkle_roots_per_protocol.write((protocol, slot), new_root);
         }

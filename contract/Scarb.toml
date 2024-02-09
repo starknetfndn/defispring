@@ -8,6 +8,7 @@ cairo-version = "2.5.0"
 
 [dependencies]
 starknet = ">=1.5.0"
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.9.0" }
 
 [[target.starknet-contract]]
 allowed-libfuncs-list.name = "audited"
