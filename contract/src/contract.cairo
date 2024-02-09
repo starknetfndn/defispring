@@ -3,32 +3,24 @@ use starknet::ContractAddress;
 #[starknet::interface]
 pub trait IDistributor<TContractState> {
     fn claim(
-        ref self: TContractState,
-        claimee: ContractAddress,
-        amount: u128,
-        proof: Span::<felt252>
+        ref self: TContractState, claimee: ContractAddress, amount: u128, proof: Span::<felt252>
     );
 
     fn add_root(ref self: TContractState, new_root: felt252);
 
     fn get_root_for(
-        self: @TContractState,
-        claimee: ContractAddress,
-        amount: u128,
-        proof: Span::<felt252>
+        self: @TContractState, claimee: ContractAddress, amount: u128, proof: Span::<felt252>
     ) -> felt252;
 
-    fn amount_already_claimed(
-        self: @TContractState, claimee: ContractAddress
-    ) -> u128;
+    fn amount_already_claimed(self: @TContractState, claimee: ContractAddress) -> u128;
 
-    fn roots(self: @TContractState, ) -> Span<felt252>;
+    fn roots(self: @TContractState,) -> Span<felt252>;
 }
 
 #[starknet::contract]
 mod Distributor {
     use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait;
-use distributor::erc20::IERC20DispatcherTrait;
+    use distributor::erc20::IERC20DispatcherTrait;
     use core::traits::TryInto;
     use distributor::contract::IDistributor;
     use starknet::ContractAddress;
@@ -50,9 +42,7 @@ use distributor::erc20::IERC20DispatcherTrait;
     }
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState, owner: ContractAddress
-    ) {
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
         self.ownable.initializer(owner);
     }
 
@@ -85,10 +75,7 @@ use distributor::erc20::IERC20DispatcherTrait;
     #[abi(embed_v0)]
     impl Distributor of super::IDistributor<ContractState> {
         fn claim(
-            ref self: ContractState,
-            claimee: ContractAddress,
-            amount: u128,
-            proof: Span::<felt252>
+            ref self: ContractState, claimee: ContractAddress, amount: u128, proof: Span::<felt252>
         ) {
             let root = self.get_root_for(claimee, amount, proof);
 
@@ -111,10 +98,7 @@ use distributor::erc20::IERC20DispatcherTrait;
         }
 
         fn get_root_for(
-            self: @ContractState,
-            claimee: ContractAddress,
-            amount: u128,
-            proof: Span::<felt252>
+            self: @ContractState, claimee: ContractAddress, amount: u128, proof: Span::<felt252>
         ) -> felt252 {
             let mut merkle_tree: MerkleTree<Hasher> = MerkleTreeTrait::new();
 
@@ -128,9 +112,7 @@ use distributor::erc20::IERC20DispatcherTrait;
             self.merkle_roots.write(slot, new_root);
         }
 
-        fn amount_already_claimed(
-            self: @ContractState, claimee: ContractAddress
-        ) -> u128 {
+        fn amount_already_claimed(self: @ContractState, claimee: ContractAddress) -> u128 {
             self.airdrop_claimed.read(claimee)
         }
 
