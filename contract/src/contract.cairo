@@ -5,26 +5,24 @@ pub trait IDistributor<TContractState> {
     fn claim(
         ref self: TContractState,
         claimee: ContractAddress,
-        protocol: u8,
         amount: u128,
         proof: Span::<felt252>
     );
 
-    fn add_root(ref self: TContractState, protocol: u8, new_root: felt252);
+    fn add_root(ref self: TContractState, new_root: felt252);
 
     fn get_root_for(
         self: @TContractState,
         claimee: ContractAddress,
-        protocol: u8,
         amount: u128,
         proof: Span::<felt252>
     ) -> felt252;
 
     fn amount_already_claimed(
-        self: @TContractState, claimee: ContractAddress, protocol: u8
+        self: @TContractState, claimee: ContractAddress
     ) -> u128;
 
-    fn roots_for_protocol(self: @TContractState, protocol: u8) -> Span<felt252>;
+    fn roots(self: @TContractState, ) -> Span<felt252>;
 }
 
 #[starknet::contract]
@@ -45,8 +43,8 @@ use distributor::erc20::IERC20DispatcherTrait;
 
     #[storage]
     struct Storage {
-        airdrop_claimed: LegacyMap::<(u8, ContractAddress), u128>,
-        merkle_roots_per_protocol: LegacyMap::<(u8, u64), felt252>, // (protocol, round)
+        airdrop_claimed: LegacyMap::<ContractAddress, u128>,
+        merkle_roots: LegacyMap::<u64, felt252>, // (round -> root)
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
@@ -68,19 +66,18 @@ use distributor::erc20::IERC20DispatcherTrait;
     #[derive(Drop, starknet::Event)]
     struct Claimed {
         claimee: ContractAddress,
-        protocol: u8,
         amount: u128
     }
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
-    fn get_first_free_slot(self: @ContractState, protocol: u8) -> u64 {
+    fn get_first_free_slot(self: @ContractState) -> u64 {
         let mut i = 0;
-        let mut root = self.merkle_roots_per_protocol.read((protocol, i));
+        let mut root = self.merkle_roots.read(i);
 
         while root != 0 {
             i += 1;
-            root = self.merkle_roots_per_protocol.read((protocol, i));
+            root = self.merkle_roots.read(i);
         };
         i
     }
@@ -90,23 +87,22 @@ use distributor::erc20::IERC20DispatcherTrait;
         fn claim(
             ref self: ContractState,
             claimee: ContractAddress,
-            protocol: u8,
             amount: u128,
             proof: Span::<felt252>
         ) {
-            let root = self.get_root_for(claimee, protocol, amount, proof);
+            let root = self.get_root_for(claimee, amount, proof);
 
-            let roots = self.roots_for_protocol(protocol);
+            let roots = self.roots();
             let mut i = 0;
             loop {
                 if (*roots.at(i) == root) {
                     let token = distributor::erc20::IERC20Dispatcher {
                         contract_address: STRK_ADDRESS.try_into().unwrap()
                     };
-                    let left_to_claim = amount - self.airdrop_claimed.read((protocol, claimee));
+                    let left_to_claim = amount - self.airdrop_claimed.read(claimee);
                     token.transfer(claimee, u256 { high: 0, low: left_to_claim });
-                    self.airdrop_claimed.write((protocol, claimee), amount);
-                    self.emit(Claimed { claimee, protocol, amount });
+                    self.airdrop_claimed.write(claimee, amount);
+                    self.emit(Claimed { claimee, amount });
                     break;
                 }
                 assert(i < roots.len(), 'INVALID PROOF');
@@ -117,7 +113,6 @@ use distributor::erc20::IERC20DispatcherTrait;
         fn get_root_for(
             self: @ContractState,
             claimee: ContractAddress,
-            protocol: u8,
             amount: u128,
             proof: Span::<felt252>
         ) -> felt252 {
@@ -127,23 +122,23 @@ use distributor::erc20::IERC20DispatcherTrait;
             merkle_tree.compute_root(leaf, proof)
         }
 
-        fn add_root(ref self: ContractState, protocol: u8, new_root: felt252) {
+        fn add_root(ref self: ContractState, new_root: felt252) {
             self.ownable.assert_only_owner();
-            let slot = get_first_free_slot(@self, protocol);
-            self.merkle_roots_per_protocol.write((protocol, slot), new_root);
+            let slot = get_first_free_slot(@self);
+            self.merkle_roots.write(slot, new_root);
         }
 
         fn amount_already_claimed(
-            self: @ContractState, claimee: ContractAddress, protocol: u8
+            self: @ContractState, claimee: ContractAddress
         ) -> u128 {
-            self.airdrop_claimed.read((protocol, claimee))
+            self.airdrop_claimed.read(claimee)
         }
 
-        fn roots_for_protocol(self: @ContractState, protocol: u8) -> Span<felt252> {
+        fn roots(self: @ContractState) -> Span<felt252> {
             let mut res: Array<felt252> = ArrayTrait::new();
             let mut i: u64 = 0;
             loop {
-                let curr_root: felt252 = self.merkle_roots_per_protocol.read((protocol, i));
+                let curr_root: felt252 = self.merkle_roots.read(i);
                 i += 1;
                 if (curr_root == 0) {
                     break;
