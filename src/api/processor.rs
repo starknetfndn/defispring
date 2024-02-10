@@ -102,9 +102,7 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
 // Reads and accumulates all airdrop info for all rounds
 pub fn read_airdrops() -> Vec<RoundTreeData> {
     let files = retrieve_valid_files();
-    //let mut results: Vec<RoundTreeData> = vec![];
     let mut round_amounts: Vec<RoundAmounts> = vec![];
-    //let mut cumulativeAirdrops: Vec<CumulativeAirdrop> = vec![];
 
     for file in files.iter() {
         let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");

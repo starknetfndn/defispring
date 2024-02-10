@@ -9,8 +9,6 @@ pub struct RoundTreeData {
     pub round: u8,
     /// Cumulative amounts for each address in a Merkle tree
     pub tree: MerkleTree,
-    // Same data as in the tree, but in an easier format. Address -> cumulative amount
-    //pub cumulative_amounts: HashMap<String, u128>,
 }
 
 // Used for some intermediary calculations
