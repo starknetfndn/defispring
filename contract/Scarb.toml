@@ -10,6 +10,10 @@ cairo-version = "2.5.0"
 starknet = ">=1.5.0"
 openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.9.0" }
 alexandria_merkle_tree = { git = "https://github.com/keep-starknet-strange/alexandria.git" }
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.17.0" }
+
+[scripts]
+test = "snforge test"
 
 [[target.starknet-contract]]
 allowed-libfuncs-list.name = "audited"
