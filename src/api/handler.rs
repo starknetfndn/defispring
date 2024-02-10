@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use actix_web::{web, HttpResponse, Responder};
 
 use super::{
-    data::{get_raw_airdrop_amount, get_raw_calldata, get_raw_root},
+    data::{
+        get_raw_airdrop_latest_amount, get_raw_airdrop_round_amount, get_raw_calldata, get_raw_root,
+    },
     merkle_tree::felt_to_b16,
 };
 
@@ -31,7 +33,23 @@ pub async fn get_calldata(query: web::Query<HashMap<String, String>>) -> impl Re
     serialized
 }
 
-pub async fn get_airdrop_amount(query: web::Query<HashMap<String, String>>) -> impl Responder {
+pub async fn get_airdrop_latest_amount(
+    query: web::Query<HashMap<String, String>>,
+) -> impl Responder {
+    let address = match query.get("address") {
+        Some(v) => v,
+        None => return HttpResponse::BadRequest().finish(),
+    };
+
+    let amount = format!("{:#x}", get_raw_airdrop_latest_amount(address));
+
+    let serialized = HttpResponse::Ok().json(amount);
+    serialized
+}
+
+pub async fn get_airdrop_round_amount(
+    query: web::Query<HashMap<String, String>>,
+) -> impl Responder {
     let address = match query.get("address") {
         Some(v) => v,
         None => return HttpResponse::BadRequest().finish(),
@@ -49,23 +67,22 @@ pub async fn get_airdrop_amount(query: web::Query<HashMap<String, String>>) -> i
         None => 0_u8, // means "use latest round"
     };
 
-    let amount = format!("{:#x}", get_raw_airdrop_amount(round, address));
+    let amount = format!("{:#x}", get_raw_airdrop_round_amount(round, address));
 
     let serialized = HttpResponse::Ok().json(amount);
     serialized
 }
 
 pub async fn get_root(query: web::Query<HashMap<String, String>>) -> impl Responder {
-    // Get the round parameter. Use the max found round if it's not given in query parameters
-    let mut round = match query.get("round") {
+    let round = match query.get("round") {
         Some(v) => {
             let round = match v.parse::<u8>() {
                 Ok(v) => v,
-                Err(_) => 0_u8,
+                Err(_) => 0_u8, // means "use latest round"
             };
             round
         }
-        None => 0_u8,
+        None => 0_u8, // means "use latest round"
     };
 
     let root = match get_raw_root(round) {

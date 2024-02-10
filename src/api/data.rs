@@ -50,7 +50,26 @@ pub fn get_raw_calldata(round: u8, address: &String) -> Vec<String> {
     calldata
 }
 
-pub fn get_raw_airdrop_amount(round: u8, address: &String) -> u128 {
+pub fn get_raw_airdrop_latest_amount(address: &String) -> u128 {
+    let relevant_data = match get_latest_data() {
+        Ok(value) => value,
+        Err(_) => return 0_u128, // TODO: check error message somehow?
+    };
+
+    let drop = match relevant_data
+        .tree
+        .airdrops
+        .iter()
+        .find(|a| &a.address == address)
+    {
+        Some(v) => v,
+        None => return 0_u128,
+    };
+
+    drop.cumulative_amount
+}
+
+pub fn get_raw_airdrop_round_amount(round: u8, address: &String) -> u128 {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
         Err(_) => return 0_u128, // TODO: check error message somehow?
@@ -78,19 +97,29 @@ pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
 }
 
 // Gets data for a specific round
-fn get_round_data(round: u8) -> Result<RoundTreeData, String> {
+fn get_latest_data() -> Result<RoundTreeData, String> {
     let round_data = get_all_data();
     let max_round = match round_data.iter().max_by_key(|&p| p.round) {
         None => return Err("No data".to_string()),
         Some(p) => p.round,
     };
-    let mut use_round = round;
-    if use_round == 0_u8 {
-        use_round = max_round;
-    }
     let relevant_data: Vec<RoundTreeData> = round_data
         .iter()
-        .filter(|&p| p.round == use_round)
+        .filter(|&p| p.round == max_round)
+        .cloned()
+        .collect();
+    if relevant_data.len() != 1 {
+        return Err("No data available".to_string());
+    }
+    Ok(relevant_data.get(0).unwrap().clone())
+}
+
+// Gets data for a specific round
+fn get_round_data(round: u8) -> Result<RoundTreeData, String> {
+    let round_data = get_all_data();
+    let relevant_data: Vec<RoundTreeData> = round_data
+        .iter()
+        .filter(|&p| p.round == round)
         .cloned()
         .collect();
     if relevant_data.len() != 1 {
