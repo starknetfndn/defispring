@@ -1,15 +1,26 @@
-use actix_web::{web, App, HttpServer, Responder};
-use defispring::api::{self, data_storage::update_api_data};
+use actix_web::{App, HttpServer};
+use defispring::api::{
+    self,
+    data_storage::update_api_data,
+    endpoints::{get_airdrop_amount, get_calldata, get_root, ApiDoc},
+};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     update_api_data();
 
-    HttpServer::new(|| {
+    let openapi = ApiDoc::openapi();
+
+    HttpServer::new(move || {
         App::new()
-            .service(web::resource("/get_calldata").to(api::endpoints::get_calldata))
-            .service(web::resource("/get_airdrop_amount").to(api::endpoints::get_airdrop_amount))
-            .service(web::resource("/get_root").to(api::endpoints::get_root))
+            .service(get_calldata)
+            .service(get_airdrop_amount)
+            .service(get_root)
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),
+            )
     })
     .bind("127.0.0.1:8080")?
     .run()
