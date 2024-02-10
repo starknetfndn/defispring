@@ -1,6 +1,5 @@
 use actix_web::{web, App, HttpServer, Responder};
-use api::processor::update_api_data;
-use defispring::api;
+use defispring::api::{self, data_storage::update_api_data};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

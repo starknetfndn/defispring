@@ -1,4 +1,3 @@
-use lazy_static::lazy_static;
 use regex::Regex;
 use serde_json::from_slice;
 use starknet_crypto::FieldElement;
@@ -8,34 +7,15 @@ use std::{
     io::Read,
     path::{Path, PathBuf},
     str::FromStr,
-    sync::RwLock,
-    vec,
 };
 
-use super::structs::{
-    CumulativeAirdrop, FileNameInfo, JSONAirdrop, MerkleTree, RoundAmounts, RoundTreeData,
+use super::{
+    data_storage::get_all_data,
+    structs::{
+        CumulativeAirdrop, FileNameInfo, JSONAirdrop, MerkleTree, RoundAmounts, RoundTreeData,
+    },
 };
 use zip::ZipArchive;
-
-// Use RwLock to allow for mutable access to the data
-lazy_static! {
-    static ref ROUND_DATA: RwLock<Vec<RoundTreeData>> = RwLock::new(Vec::new());
-}
-
-pub fn get_all_data() -> Vec<RoundTreeData> {
-    ROUND_DATA
-        .read()
-        .expect("Failed to acquire read lock")
-        .clone()
-}
-
-pub fn update_api_data() {
-    let mut data = ROUND_DATA.write().expect("Failed to acquire write lock");
-
-    let drops = read_airdrops();
-
-    *data = drops;
-}
 
 pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Vec<String> {
     let relevant_data = match get_round_data(round) {

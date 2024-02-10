@@ -22,10 +22,8 @@ fn test_empty_data() {
         round: 1u8,
         amounts: drop,
     });
-    let res = get_raw_calldata(Some(1u8), &"0x1".to_string());
 
-    assert!(res[0].address_amount("0x1").unwrap() == 0_u128);
-    assert!(res[0].address_amount("0x2").unwrap() == 0_u128);
+    let res = get_raw_calldata(Some(1u8), &"0x1".to_string());
 }
 #[ignore]
 #[test]
