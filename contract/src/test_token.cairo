@@ -32,11 +32,7 @@ mod MyToken {
     }
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState,
-        fixed_supply: u256,
-        recipient: ContractAddress
-    ) {
+    fn constructor(ref self: ContractState, fixed_supply: u256, recipient: ContractAddress) {
         let name = 'MyToken';
         let symbol = 'MTK';
 
