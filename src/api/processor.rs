@@ -136,6 +136,9 @@ struct RoundCumulativeMaps {
 pub fn transform_airdrops_to_cumulative_rounds(
     mut airdrops: Vec<RoundAmounts>,
 ) -> Vec<RoundTreeData> {
+    if airdrops.len() == 0 {
+        return Vec::new();
+    }
     airdrops.sort_by(|a, b| a.round.cmp(&b.round));
 
     let cumulative_amount_maps = map_cumulative_amounts(airdrops);
@@ -150,13 +153,16 @@ pub fn transform_airdrops_to_cumulative_rounds(
             };
             curr_round_data.push(address_cumulative);
         }
-        let tree = MerkleTree::new(curr_round_data);
 
-        let round_drop = RoundTreeData {
-            round: cum_map.round,
-            tree: tree,
-        };
-        rounds.push(round_drop);
+        if curr_round_data.len() > 0 {
+            let tree = MerkleTree::new(curr_round_data);
+
+            let round_drop = RoundTreeData {
+                round: cum_map.round,
+                tree: tree,
+            };
+            rounds.push(round_drop);
+        }
     }
 
     rounds
@@ -185,9 +191,11 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundCumulativeMap
 
         round_maps.push(map);
     }
+
     round_maps
 }
 
+/// Retrieve allocated amount for an address in a specific round
 impl RoundTreeData {
     pub fn address_amount(&self, address: &str) -> Result<u128, String> {
         let address_drop: Vec<CumulativeAirdrop> = self
@@ -199,7 +207,7 @@ impl RoundTreeData {
             .collect();
 
         if address_drop.len() == 0 {
-            return Err("Address not found".to_string());
+            Ok(0_u128)
         } else {
             Ok(address_drop.get(0).unwrap().cumulative_amount)
         }
