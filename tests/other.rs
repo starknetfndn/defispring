@@ -2,7 +2,7 @@ use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashMap, str::FromStr};
 
 use defispring::api::{
-    data::read_airdrops,
+    processor::read_airdrops,
     structs::{JSONAirdrop, MerkleTree, RoundTreeData},
 };
 

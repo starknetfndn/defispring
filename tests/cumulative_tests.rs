@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use defispring::api::{
-    data::transform_airdrops_to_cumulative_rounds,
+    processor::transform_airdrops_to_cumulative_rounds,
     structs::{JSONAirdrop, MerkleTree, RoundAmounts, RoundTreeData},
 };
 

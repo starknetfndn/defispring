@@ -37,7 +37,7 @@ pub fn update_api_data() {
     *data = drops;
 }
 
-pub fn get_raw_calldata(round: u8, address: &String) -> Vec<String> {
+pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Vec<String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
         Err(_) => return Vec::new(), // TODO: check error message somehow?
@@ -50,29 +50,10 @@ pub fn get_raw_calldata(round: u8, address: &String) -> Vec<String> {
     calldata
 }
 
-pub fn get_raw_airdrop_latest_amount(address: &String) -> u128 {
-    let relevant_data = match get_latest_data() {
-        Ok(value) => value,
-        Err(_) => return 0_u128, // TODO: check error message somehow?
-    };
-
-    let drop = match relevant_data
-        .tree
-        .airdrops
-        .iter()
-        .find(|a| &a.address == address)
-    {
-        Some(v) => v,
-        None => return 0_u128,
-    };
-
-    drop.cumulative_amount
-}
-
-pub fn get_raw_airdrop_round_amount(round: u8, address: &String) -> u128 {
+pub fn get_raw_airdrop_amount(round: Option<u8>, address: &String) -> Result<u128, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
-        Err(_) => return 0_u128, // TODO: check error message somehow?
+        Err(value) => return Err(value),
     };
 
     let drop = match relevant_data
@@ -82,13 +63,13 @@ pub fn get_raw_airdrop_round_amount(round: u8, address: &String) -> u128 {
         .find(|a| &a.address == address)
     {
         Some(v) => v,
-        None => return 0_u128,
+        None => return Err("No data found".to_string()),
     };
 
-    drop.cumulative_amount
+    Ok(drop.cumulative_amount)
 }
 
-pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
+pub fn get_raw_root(round: Option<u8>) -> Result<FieldElement, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
         Err(_) => return Err("No data".to_string()), // TODO: check error message somehow?
@@ -97,29 +78,19 @@ pub fn get_raw_root(round: u8) -> Result<FieldElement, String> {
 }
 
 // Gets data for a specific round
-fn get_latest_data() -> Result<RoundTreeData, String> {
+fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
     let round_data = get_all_data();
-    let max_round = match round_data.iter().max_by_key(|&p| p.round) {
-        None => return Err("No data".to_string()),
-        Some(p) => p.round,
+    // Use round if it's provided. Otherwise use the latest round
+    let use_round = match round {
+        Some(v) => v,
+        None => match round_data.iter().max_by_key(|&p| p.round) {
+            None => return Err("No data found".to_string()),
+            Some(p) => p.round,
+        },
     };
     let relevant_data: Vec<RoundTreeData> = round_data
         .iter()
-        .filter(|&p| p.round == max_round)
-        .cloned()
-        .collect();
-    if relevant_data.len() != 1 {
-        return Err("No data available".to_string());
-    }
-    Ok(relevant_data.get(0).unwrap().clone())
-}
-
-// Gets data for a specific round
-fn get_round_data(round: u8) -> Result<RoundTreeData, String> {
-    let round_data = get_all_data();
-    let relevant_data: Vec<RoundTreeData> = round_data
-        .iter()
-        .filter(|&p| p.round == round)
+        .filter(|&p| p.round == use_round)
         .cloned()
         .collect();
     if relevant_data.len() != 1 {
