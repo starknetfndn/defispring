@@ -43,7 +43,7 @@ pub fn get_raw_calldata(round: u8, address: &String) -> Vec<String> {
         Err(_) => return Vec::new(), // TODO: check error message somehow?
     };
 
-    let calldata: Vec<String> = match relevant_data.tree.address_calldata(round, &address) {
+    let calldata: Vec<String> = match relevant_data.tree.address_calldata(&address) {
         Ok(v) => v,
         Err(_) => vec![],
     };
