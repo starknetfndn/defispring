@@ -29,7 +29,11 @@ You can launch the API locally by first installing Rust and then running `cargo 
 
 ### Endpoints
 
-TODO: document here or elsewhere?
+The endpoints are documented with OpenAPI documentation. A Swagger UI is generated on top of the documentation at address /swagger-ui/ when running the APIs somewhere.
+
+The Swagger UI can be used also to test the endpoints.
+
+An example deployment, with Swagger UI, can be found at TODO.
 
 ### Project structure
 
