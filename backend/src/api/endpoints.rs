@@ -2,7 +2,7 @@ use actix_web::{web, HttpResponse, Responder};
 
 use super::{
     merkle_tree::felt_to_b16,
-    processor::{get_raw_airdrop_amount, get_raw_calldata, get_raw_root},
+    processor::{get_raw_airdrop_amount, get_raw_calldata, get_raw_root}, structs::CairoCalldata,
 };
 use actix_web::get;
 use serde::Deserialize;
@@ -16,7 +16,7 @@ use utoipa::{IntoParams, OpenApi};
         get_calldata
     ),
     components(
-        schemas()
+        schemas(CairoCalldata)
     ),
     tags(
         (name = "DeFi REST API", description = "DeFi airdrop endpoints")
@@ -36,7 +36,7 @@ pub struct GetCalldataParams {
 #[utoipa::path(
     tag = "Generates calldata for the associated Cairo contract",
     responses(
-        (status = 200, description= "Calldata for the Cairo contract", body = Vec<String>),       
+        (status = 200, description= "Calldata for the Cairo contract", body = CairoCalldata),       
     ),
     params(
         GetCalldataParams
@@ -48,7 +48,7 @@ pub async fn get_calldata(query: web::Query<GetCalldataParams>) -> impl Responde
     let round = if query.round == Some(0) { None } else { query.round };
 
     let calldata = get_raw_calldata(round, &query.address);
-
+ 
     match calldata {
         Ok(value) => HttpResponse::Ok().json(value),
         Err(value) => HttpResponse::BadRequest().json(value)

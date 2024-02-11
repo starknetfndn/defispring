@@ -81,16 +81,10 @@ export default function Home() {
     const response = await fetch(
       BASE_BACKEND_URL + "get_calldata?address=" + walletAddress
     );
-    const calldata: string[] = await response.json();
+    const calldata: ClaimCalldata = await response.json();
     console.log("Received claldata", calldata);
 
-    var data: ClaimCalldata = {
-      address: calldata[0],
-      amount: calldata[1],
-      proof: calldata.slice(2),
-    };
-
-    setReceivedCalldata(data);
+    setReceivedCalldata(calldata);
 
     setIsClaimReady(true);
   };

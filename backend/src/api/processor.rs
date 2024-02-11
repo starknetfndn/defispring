@@ -6,12 +6,13 @@ use std::{collections::HashMap, fs::File, io::Read, path::Path};
 use super::{
     data_storage::get_all_data,
     structs::{
-        CumulativeAirdrop, FileNameInfo, JSONAirdrop, MerkleTree, RoundAmounts, RoundTreeData,
+        CairoCalldata, CumulativeAirdrop, FileNameInfo, JSONAirdrop, MerkleTree, RoundAmounts,
+        RoundTreeData,
     },
 };
 use zip::ZipArchive;
 
-pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Result<Vec<String>, String> {
+pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Result<CairoCalldata, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
         Err(value) => {
@@ -19,7 +20,7 @@ pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Result<Vec<Strin
         }
     };
 
-    let calldata: Vec<String> = match relevant_data.tree.address_calldata(&address) {
+    let calldata: CairoCalldata = match relevant_data.tree.address_calldata(&address) {
         Ok(v) => v,
         Err(value) => {
             return Err(value);

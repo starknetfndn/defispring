@@ -1,6 +1,7 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use starknet_crypto::FieldElement;
 use std::collections::HashSet;
+use utoipa::ToSchema;
 
 /// Contains all data used in one round
 #[derive(Debug, Clone)]
@@ -21,6 +22,17 @@ pub struct RoundAmounts {
 pub struct MerkleTree {
     pub root: Node,
     pub airdrops: Vec<CumulativeAirdrop>,
+}
+
+/// Calldata to be used for the associated Cairo contract
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct CairoCalldata {
+    /// The address for which we want to claim
+    pub address: String,
+    /// The claimed amount
+    pub amount: String,
+    /// Merkle proof for the claim
+    pub proof: Vec<String>,
 }
 
 #[derive(Debug, Clone)]

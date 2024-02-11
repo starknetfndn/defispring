@@ -1,7 +1,7 @@
 use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashSet, str::FromStr, vec};
 
-use super::structs::{CumulativeAirdrop, MerkleTree, Node};
+use super::structs::{CairoCalldata, CumulativeAirdrop, MerkleTree, Node};
 
 pub fn strip_leading_zeroes(hex: &str) -> String {
     if hex.len() <= 3 || &hex[..2] != "0x" {
@@ -36,7 +36,7 @@ impl MerkleTree {
         MerkleTree { root, airdrops }
     }
 
-    pub fn address_calldata(&self, address: &str) -> Result<Vec<String>, String> {
+    pub fn address_calldata(&self, address: &str) -> Result<CairoCalldata, String> {
         let felt_address = match FieldElement::from_str(address) {
             Ok(v) => v,
             _ => return Err("Invalid address".to_string()),
@@ -73,11 +73,20 @@ impl MerkleTree {
         let address = FieldElement::from_str(&airdrop.address).unwrap();
         let amount = FieldElement::from(airdrop.cumulative_amount);
 
-        let mut calldata = vec![address, amount];
-        calldata.append(&mut hashes);
+        let hash_strings = hashes.iter().map(felt_to_b16).collect();
+
+        let mut calldata = CairoCalldata {
+            address: felt_to_b16(&address),
+            amount: felt_to_b16(&amount),
+            proof: hash_strings,
+        };
+        Ok(calldata)
+
+        /*     let mut calldata = vec![address, amount];
+        calldata.append(&mut hashStrings);
 
         // in order to be readable by FE needs to be base16 string
-        Ok(calldata.iter().map(felt_to_b16).collect())
+        Ok(calldata.iter().map(felt_to_b16).collect()) */
     }
 }
 
