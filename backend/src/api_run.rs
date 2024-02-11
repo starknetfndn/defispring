@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer};
+use actix_web::{middleware, App, HttpServer};
 use defispring::api::{
     data_storage::update_api_data,
     endpoints::{get_airdrop_amount, get_calldata, get_root, ApiDoc},
@@ -14,6 +14,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Origin", "*")))
             .service(get_calldata)
             .service(get_airdrop_amount)
             .service(get_root)

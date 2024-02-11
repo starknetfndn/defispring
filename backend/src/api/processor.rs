@@ -41,7 +41,7 @@ pub fn get_raw_airdrop_amount(round: Option<u8>, address: &String) -> Result<u12
         .find(|a| &a.address == address)
     {
         Some(v) => v,
-        None => return Err("No data found".to_string()),
+        None => return Ok(0_128),
     };
 
     Ok(drop.cumulative_amount)
@@ -62,7 +62,7 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
     let use_round = match round {
         Some(v) => v,
         None => match round_data.iter().max_by_key(|&p| p.round) {
-            None => return Err("No data found".to_string()),
+            None => return Err("No airdrop data found".to_string()),
             Some(p) => p.round,
         },
     };
@@ -72,7 +72,7 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
         .cloned()
         .collect();
     if relevant_data.len() != 1 {
-        return Err("No data available".to_string());
+        return Err("No airdrop data available".to_string());
     }
     Ok(relevant_data.get(0).unwrap().clone())
 }
