@@ -1,2 +1,2 @@
 mod contract;
-mod test_token;
+mod tests;
