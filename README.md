@@ -2,7 +2,7 @@
 
 This project is used to enable airdrops in the Starknet ecosystem for given addresses. The project is utilized for incentivizing DeFi protocol usage.
 
-The project contains a backend that generates all the needed data for the airdrops plus a Cairo contract for distributing the airdrops.
+The project contains a backend that generates all the needed data for the airdrops, a Cairo contract for distributing the airdrops and a frontend to demonstrate the functionalit.
 
 ## Usage for different parties
 
@@ -20,3 +20,7 @@ The backend is documented at <a href='backend/README.md'>the backend folder</a>.
 ## Cairo Smart Contract
 
 The Cairo contract is documented at <a href='contract/README.md'>the contract folder</a>.
+
+## Frontend
+
+The frontend is documented at <a href='frontend/README.md'>the frontend folder</a>.

@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/Button";
 
 export default function Home() {
   const BASE_BACKEND_URL = "http://127.0.0.1:8080/";
-  const contractAddress =
+  const CONTRACT_ADDRESS =
     "0x07fc96c0049151d938d0d799228716f60bf98c578fbf9cdb1eb7e81f7440a850";
 
   const { contract } = useContract({
     abi: contractAbi,
-    address: contractAddress,
+    address: CONTRACT_ADDRESS,
   });
   const { address } = useAccount();
 
@@ -48,20 +48,19 @@ export default function Home() {
     functionName: "amount_already_claimed",
     args: [walletAddress!],
     abi: contractAbi,
-    address: contractAddress,
+    address: CONTRACT_ADDRESS,
     watch: false,
   });
 
   useEffect(() => {
     if (!isLoading && !isError) {
-      console.log("DATA", alreadyClaimedData as BigInt);
       setAlreadyClaimed(alreadyClaimedData as BigInt);
     }
   }, [isLoading, isError, alreadyClaimedData]);
 
   const calls = useMemo(() => {
     if (!walletAddress || !contract || !receivedcalldata) return [];
-    console.log("settin memo");
+
     return contract.populateTransaction["claim"]!(
       receivedcalldata.address,
       receivedcalldata.amount,

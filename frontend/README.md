@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-starknet`](https://github.com/apibara/starknet-react/tree/main/packages/create-starknet).
+# Example frontend
 
-## Getting Started
+This is an example frontend that can be used to claim airdrops.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The frontend is implemented with NextJS (React). It has the bare minimum functionality required to showcase the functionality.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Do not use this functionality directly in your own projects. Instead, adjust it to your own project.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Functionality
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+This frontend has the following functionality:
 
-## Learn More
+1. Connect your Starknet wallet
+1. Check how many tokens you have been allocated
+1. Check how many tokens you have already claimed
+1. Prepare to claim your tokens (retrieves some needed metadata)
+1. Claim your tokens. Requires that you first execute the preparation phase
 
-To learn more about Next.js, take a look at the following resources:
+## Trying it out
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All of the functionality is only for demonstration purposes. However, if you want to test it out yourself, you need to do at least the following changes to the code:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1. Change the BASE_BACKEND_URL in page.tsx to point to your backend. Or leave as is, if you are testing locally (and running the backend in that address)
+1. Change the CONTRACT_ADDRESS to point to your deployed contract
+1. Change the used/supported networks in starknet-provider.tsx
+1. Make sure the used ABI is up to date (abi.json in the _app_ folder)
 
-## Deploy on Vercel
+### Installation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This is a regular NextJS project with npm. Therefore, installation steps are:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. Run `npm install`
+1. Run `npm run buld` to build some metadata needed by NextJS
+1. Run `npm run dev` to run locally
