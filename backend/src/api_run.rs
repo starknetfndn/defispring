@@ -1,6 +1,5 @@
 use actix_web::{App, HttpServer};
 use defispring::api::{
-    self,
     data_storage::update_api_data,
     endpoints::{get_airdrop_amount, get_calldata, get_root, ApiDoc},
 };

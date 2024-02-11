@@ -36,13 +36,13 @@ impl MerkleTree {
         MerkleTree { root, airdrops }
     }
 
-    pub fn address_calldata(&self, address: &str) -> Result<Vec<String>, ()> {
+    pub fn address_calldata(&self, address: &str) -> Result<Vec<String>, String> {
         let felt_address = match FieldElement::from_str(address) {
             Ok(v) => v,
-            _ => return Err(()),
+            _ => return Err("Invalid address".to_string()),
         };
         if !&self.root.accessible_addresses.contains(&felt_address) {
-            return Err(());
+            return Err("Address not found in tree".to_string());
         }
         let mut hashes: Vec<FieldElement> = vec![];
         let mut current_node = &self.root;

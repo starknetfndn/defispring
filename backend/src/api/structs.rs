@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use starknet_crypto::FieldElement;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 /// Contains all data used in one round
 #[derive(Debug, Clone)]

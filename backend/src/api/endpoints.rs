@@ -49,8 +49,10 @@ pub async fn get_calldata(query: web::Query<GetCalldataParams>) -> impl Responde
 
     let calldata = get_raw_calldata(round, &query.address);
 
-    let serialized = HttpResponse::Ok().json(calldata);
-    serialized
+    match calldata {
+        Ok(value) => HttpResponse::Ok().json(value),
+        Err(value) => HttpResponse::BadRequest().json(value)
+    }
 }
 
 #[derive(Deserialize, Debug, IntoParams)]
@@ -75,15 +77,11 @@ pub async fn get_airdrop_amount(query: web::Query<GetAirdropAmountParams>) -> im
     // Get the round parameter. Use the max found round if it's not given in query parameters or is 0
     let round = if query.round == Some(0) { None } else { query.round };
     
-    let amount = match get_raw_airdrop_amount(round, &query.address) {
-        Ok(value) => format!("{:#x}", value),
-        Err(value) => return HttpResponse::BadRequest().json(value),
-    };
-
-    let serialized = HttpResponse::Ok().json(amount);
-    serialized
+    match get_raw_airdrop_amount(round, &query.address) {
+        Ok(value) => HttpResponse::Ok().json(format!("{:#x}", value)),
+        Err(value) => HttpResponse::BadRequest().json(value)
+    }
 }
-
 
 #[derive(Deserialize, Debug, IntoParams)]
 pub struct GetRootParams {
@@ -105,10 +103,8 @@ pub async fn get_root(query: web::Query<GetRootParams>) -> impl Responder {
     // Get the round parameter. Use the max found round if it's not given in query parameters or is 0
     let round = if query.round == Some(0) { None } else { query.round };
 
-    let root = match get_raw_root(round)  {
-        Ok(v) => v,
+    match get_raw_root(round)  {
+        Ok(v) => HttpResponse::Ok().json(felt_to_b16(&v)),
         Err(value) => return HttpResponse::BadRequest().json(value),
-    };
-    let serialized = HttpResponse::Ok().json(felt_to_b16(&root));
-    serialized
+    }
 }

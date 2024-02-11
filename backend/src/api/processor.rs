@@ -1,13 +1,7 @@
 use regex::Regex;
 use serde_json::from_slice;
 use starknet_crypto::FieldElement;
-use std::{
-    collections::{hash_map::Entry, HashMap, HashSet},
-    fs::File,
-    io::Read,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{collections::HashMap, fs::File, io::Read, path::Path};
 
 use super::{
     data_storage::get_all_data,
@@ -17,17 +11,21 @@ use super::{
 };
 use zip::ZipArchive;
 
-pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Vec<String> {
+pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Result<Vec<String>, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
-        Err(_) => return Vec::new(), // TODO: check error message somehow?
+        Err(value) => {
+            return Err(value);
+        }
     };
 
     let calldata: Vec<String> = match relevant_data.tree.address_calldata(&address) {
         Ok(v) => v,
-        Err(_) => vec![],
+        Err(value) => {
+            return Err(value);
+        }
     };
-    calldata
+    Ok(calldata)
 }
 
 pub fn get_raw_airdrop_amount(round: Option<u8>, address: &String) -> Result<u128, String> {
@@ -79,34 +77,7 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
     Ok(relevant_data.get(0).unwrap().clone())
 }
 
-// Reads and accumulates all airdrop info for all rounds
-pub fn read_airdrops() -> Vec<RoundTreeData> {
-    let files = retrieve_valid_files();
-    let mut round_amounts: Vec<RoundAmounts> = vec![];
-
-    for file in files.iter() {
-        let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
-        let mut archive: zip::ZipArchive<File> = ZipArchive::<File>::new(zipfile).unwrap();
-        if archive.len() > 0 {
-            // Only read the first file in the zip archive
-            let mut archive_file = archive.by_index(0).unwrap();
-            let mut buffer = Vec::new();
-            archive_file
-                .read_to_end(&mut buffer)
-                .expect("problem reading zip");
-            let airdrop: Vec<JSONAirdrop> =
-                from_slice(&buffer).expect("Failed to deserialize airdrop");
-
-            let round_amount = RoundAmounts {
-                amounts: airdrop.clone(),
-                round: file.round,
-            };
-            round_amounts.push(round_amount);
-        }
-    }
-    transform_airdrops_to_cumulative_rounds(round_amounts)
-}
-
+/// Temporary storage
 struct RoundCumulativeMaps {
     round: u8,
     cumulative_amounts: HashMap<String, u128>,
@@ -157,7 +128,7 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundCumulativeMap
         for data in airdrop.amounts.iter() {
             let amount = match data.amount.parse::<u128>() {
                 Ok(value) => value,
-                Err(_) => 0_u128, // FIXME: what to do when data is invalid?
+                Err(_) => 0_u128, // TODO: what to do when data is invalid?
             };
 
             *all_rounds_cums
@@ -173,6 +144,59 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundCumulativeMap
     }
 
     round_maps
+}
+
+// Reads and accumulates all airdrop info for all rounds
+pub fn read_airdrops() -> Vec<RoundTreeData> {
+    let files = retrieve_valid_files();
+    let mut round_amounts: Vec<RoundAmounts> = vec![];
+
+    for file in files.iter() {
+        let zipfile = File::open(file.clone().full_path).expect("Failed to open zip file");
+        let mut archive: zip::ZipArchive<File> = ZipArchive::<File>::new(zipfile).unwrap();
+        if archive.len() > 0 {
+            // Only read the first file in the zip archive
+            let mut archive_file = archive.by_index(0).unwrap();
+            let mut buffer = Vec::new();
+            archive_file
+                .read_to_end(&mut buffer)
+                .expect("problem reading zip");
+            let airdrop: Vec<JSONAirdrop> =
+                from_slice(&buffer).expect("Failed to deserialize airdrop");
+
+            let round_amount = RoundAmounts {
+                amounts: airdrop.clone(),
+                round: file.round,
+            };
+            round_amounts.push(round_amount);
+        }
+    }
+    transform_airdrops_to_cumulative_rounds(round_amounts)
+}
+
+/// Returns all files that have the correct filename syntax
+fn retrieve_valid_files() -> Vec<FileNameInfo> {
+    let mut valid_files: Vec<FileNameInfo> = vec![];
+    let path = Path::new("src/raw_input");
+
+    let template_pattern = r"^raw_(\d+)\.zip$";
+    let regex = Regex::new(&template_pattern).expect("Invalid regex pattern");
+
+    for entry in path.read_dir().expect("read_dir call failed") {
+        if let Ok(entry) = entry {
+            if let Some(captures) = regex.captures(entry.file_name().to_str().unwrap()) {
+                // Collect valid file names
+                if let Some(round) = captures.get(1) {
+                    let fileinfo = FileNameInfo {
+                        full_path: entry.path().to_str().unwrap().to_string(),
+                        round: round.as_str().parse::<u8>().unwrap(),
+                    };
+                    valid_files.push(fileinfo);
+                }
+            }
+        }
+    }
+    valid_files
 }
 
 /// Retrieve allocated amount for an address in a specific round
@@ -192,29 +216,4 @@ impl RoundTreeData {
             Ok(address_drop.get(0).unwrap().cumulative_amount)
         }
     }
-}
-
-/// Returns all files that have the correct filename syntax
-fn retrieve_valid_files() -> Vec<FileNameInfo> {
-    let mut valid_files: Vec<FileNameInfo> = vec![];
-    let path = Path::new("src/raw_input");
-
-    let template_pattern = r"^raw_(\d+)\.zip$";
-    let regex = Regex::new(&template_pattern).expect("Invalid regex pattern");
-
-    for entry in path.read_dir().expect("read_dir call failed") {
-        if let Ok(entry) = entry {
-            if let Some(captures) = regex.captures(entry.file_name().to_str().unwrap()) {
-                if let Some(round) = captures.get(1) {
-                    // TODO: what to do if filename is not correct?
-                    let fileinfo = FileNameInfo {
-                        full_path: entry.path().to_str().unwrap().to_string(),
-                        round: round.as_str().parse::<u8>().unwrap(),
-                    };
-                    valid_files.push(fileinfo);
-                }
-            }
-        }
-    }
-    valid_files
 }
