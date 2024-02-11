@@ -5,7 +5,7 @@ use starknet::ContractAddress;
 #[starknet::interface]
 pub trait IDistributor<TContractState> {
     fn claim(
-        ref self: TContractState, claimee: ContractAddress, amount: u128, proof: Span::<felt252>
+        ref self: TContractState, amount: u128, proof: Span::<felt252>
     );
 
     fn add_root(ref self: TContractState, new_root: felt252);
@@ -31,6 +31,7 @@ mod Distributor {
         Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
     };
     use core::hash::LegacyHash;
+    use starknet::get_caller_address;
     use openzeppelin::access::ownable::ownable::OwnableComponent;
 
     const STRK_ADDRESS: felt252 =
@@ -53,7 +54,7 @@ mod Distributor {
     #[event]
     enum Event {
         Claimed: Claimed,
-        OwnableEvent: OwnableComponent::Event
+        OwnableEvent: OwnableComponent::Event // TODO check up on whether I still need #[flat]
     }
 
     #[derive(Drop, starknet::Event)]
@@ -78,8 +79,9 @@ mod Distributor {
     #[abi(embed_v0)]
     impl Distributor of super::IDistributor<ContractState> {
         fn claim(
-            ref self: ContractState, claimee: ContractAddress, amount: u128, proof: Span::<felt252>
+            ref self: ContractState, amount: u128, proof: Span::<felt252>
         ) {
+            let claimee = get_caller_address();
             let root = self.get_root_for(claimee, amount, proof);
 
             let roots = self.roots();
