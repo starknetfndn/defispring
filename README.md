@@ -19,4 +19,4 @@ The backend is documented at <a href='backend/README.md'>the backend folder</a>.
 
 ## Cairo Smart Contract
 
-The backend is documented at <a href='contract/README.md'>the contract folder</a>.
+The Cairo contract is documented at <a href='contract/README.md'>the contract folder</a>.
