@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 export default function Home() {
   const BASE_BACKEND_URL = "http://127.0.0.1:8080/";
   const CONTRACT_ADDRESS =
-    "0x5c04e12e7ef639fa7c2af3d461f3664b401d86f577b56821eb0f5f55eba6719";
+    "0x15e03e938de3216dd841f47ce0aa383056832624690b66edce5d3207835d680";
 
   const { contract } = useContract({
     abi: contractAbi,

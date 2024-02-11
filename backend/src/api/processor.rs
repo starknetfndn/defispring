@@ -106,6 +106,9 @@ pub fn transform_airdrops_to_cumulative_rounds(
             curr_round_data.push(address_cumulative);
         }
 
+        // Sort because hashmap iterator returns keys in arbitrary order
+        curr_round_data.sort_by(|a, b| a.address.cmp(&b.address));
+
         if curr_round_data.len() > 0 {
             let tree = MerkleTree::new(curr_round_data);
 
