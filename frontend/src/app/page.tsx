@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 export default function Home() {
   const BASE_BACKEND_URL = "http://127.0.0.1:8080/";
   const CONTRACT_ADDRESS =
-    "0x07fc96c0049151d938d0d799228716f60bf98c578fbf9cdb1eb7e81f7440a850";
+    "0x5c04e12e7ef639fa7c2af3d461f3664b401d86f577b56821eb0f5f55eba6719";
 
   const { contract } = useContract({
     abi: contractAbi,
@@ -21,9 +21,11 @@ export default function Home() {
   });
   const { address } = useAccount();
 
+  // Data to be utilized for claiming tokens
   interface ClaimCalldata {
-    address: string;
+    // How much to claim. Should always claim the maximum amount
     amount: string;
+    // Merkle proof for the claim
     proof: string[];
   }
 
@@ -62,7 +64,6 @@ export default function Home() {
     if (!walletAddress || !contract || !receivedcalldata) return [];
 
     return contract.populateTransaction["claim"]!(
-      receivedcalldata.address,
       receivedcalldata.amount,
       receivedcalldata.proof
     );
@@ -137,7 +138,9 @@ export default function Home() {
         <p>
           <b>Results</b>
         </p>
-        <div>Already claimed: {alreadyClaimed.toString()}</div>
+        {alreadyClaimed !== undefined && (
+          <div>Already claimed: {alreadyClaimed.toString()}</div>
+        )}
         <div>
           <p>Allocated airdrop amount: {airdropAmount}</p>
         </div>

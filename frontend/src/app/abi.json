@@ -23,10 +23,6 @@
         "type": "function",
         "inputs": [
           {
-            "name": "claimee",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
             "name": "amount",
             "type": "core::integer::u128"
           },

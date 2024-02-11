@@ -70,13 +70,11 @@ impl MerkleTree {
             .find(|a| &FieldElement::from_str(&a.address).unwrap() == &felt_address)
             .unwrap();
 
-        let address = FieldElement::from_str(&airdrop.address).unwrap();
         let amount = FieldElement::from(airdrop.cumulative_amount);
 
         let hash_strings = hashes.iter().map(felt_to_b16).collect();
 
-        let mut calldata = CairoCalldata {
-            address: felt_to_b16(&address),
+        let calldata = CairoCalldata {
             amount: felt_to_b16(&amount),
             proof: hash_strings,
         };

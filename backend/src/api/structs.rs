@@ -27,9 +27,7 @@ pub struct MerkleTree {
 /// Calldata to be used for the associated Cairo contract
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct CairoCalldata {
-    /// The address for which we want to claim
-    pub address: String,
-    /// The claimed amount
+    /// The amount to claim
     pub amount: String,
     /// Merkle proof for the claim
     pub proof: Vec<String>,
