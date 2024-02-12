@@ -214,7 +214,7 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
 /// Returns all files that have the correct filename syntax
 fn retrieve_valid_files() -> Vec<FileNameInfo> {
     let mut valid_files: Vec<FileNameInfo> = vec![];
-    let path = Path::new("src/raw_input");
+    let path = Path::new("./raw_input");
 
     let template_pattern = r"^raw_(\d+)\.zip$";
     let regex = Regex::new(&template_pattern).expect("Invalid regex pattern");
