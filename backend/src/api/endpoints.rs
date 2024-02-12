@@ -1,8 +1,7 @@
 use actix_web::{web, HttpResponse, Responder};
 
 use super::{
-    merkle_tree::felt_to_b16,
-    processor::{get_raw_airdrop_amount, get_raw_calldata, get_raw_root}, structs::CairoCalldata,
+    processor::{get_raw_airdrop_amount, get_raw_calldata, get_raw_root}, structs::{CairoCalldata, RootQueryResult},
 };
 use actix_web::get;
 use serde::Deserialize;
@@ -16,7 +15,7 @@ use utoipa::{IntoParams, OpenApi};
         get_calldata
     ),
     components(
-        schemas(CairoCalldata)
+        schemas(CairoCalldata, RootQueryResult)
     ),
     tags(
         (name = "DeFi Incentives REST API", description = "DeFi airdrop endpoints")
@@ -48,7 +47,7 @@ pub async fn get_calldata(query: web::Query<GetCalldataParams>) -> impl Responde
     let round = if query.round == Some(0) { None } else { query.round };
 
     let calldata = get_raw_calldata(round, &query.address.to_lowercase());
-    
+
     match calldata {
         Ok(value) => HttpResponse::Ok().json(value),
         Err(value) => HttpResponse::BadRequest().json(value)
@@ -78,7 +77,7 @@ pub async fn get_airdrop_amount(query: web::Query<GetAirdropAmountParams>) -> im
     let round = if query.round == Some(0) { None } else { query.round };
     
     match get_raw_airdrop_amount(round, &query.address.to_lowercase()) {
-        Ok(value) => HttpResponse::Ok().json(format!("{:#x}", value)),
+        Ok(value) => HttpResponse::Ok().json(value),
         Err(value) => HttpResponse::BadRequest().json(value)
     }
 }
@@ -92,7 +91,7 @@ pub struct GetRootParams {
 #[utoipa::path(
     tag = "Gets the root value of the merkle tree",
     responses(
-        (status = 200, description= "Hash of the root value", body = String),       
+        (status = 200, description= "Value for the round, including the root", body = RootQueryResult),       
     ),
     params(
         GetRootParams
@@ -104,7 +103,7 @@ pub async fn get_root(query: web::Query<GetRootParams>) -> impl Responder {
     let round = if query.round == Some(0) { None } else { query.round };
 
     match get_raw_root(round)  {
-        Ok(v) => HttpResponse::Ok().json(felt_to_b16(&v)),
+        Ok(v) => HttpResponse::Ok().json(&v),
         Err(value) => return HttpResponse::BadRequest().json(value),
     }
 }

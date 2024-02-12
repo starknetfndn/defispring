@@ -10,14 +10,19 @@ pub struct RoundTreeData {
     pub round: u8,
     /// Cumulative amounts for each address in a Merkle tree
     pub tree: MerkleTree,
+    /// The accumulated amount of tokens to be distributed in a round. Includes amounts from all previous rounds
+    pub accumulated_total_amount: u128,
+    /// The total amount of tokens to be distributed in a round. Includes amounts only from one round
+    pub round_total_amount: u128,
 }
 
-// Used for some intermediary calculations
+/// Used for some intermediary calculations
 pub struct RoundAmounts {
     pub round: u8,
     pub amounts: Vec<JSONAirdrop>,
 }
 
+/// A Merkle tree with extra airdrop data for easier access
 #[derive(Debug, Clone)]
 pub struct MerkleTree {
     pub root: Node,
@@ -33,6 +38,18 @@ pub struct CairoCalldata {
     pub proof: Vec<String>,
 }
 
+/// Result for querying root data
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct RootQueryResult {
+    /// The Merkle root for this round
+    pub root: String,
+    /// The accumulated amount of tokens to be distributed in a round. Includes amounts from all previous rounds
+    pub accumulated_total_amount: u128,
+    /// The total amount of tokens to be distributed in a round. Includes amounts only from one round
+    pub round_total_amount: u128,
+}
+
+/// A node in a Merkle tree
 #[derive(Debug, Clone)]
 pub struct Node {
     pub left_child: Option<Box<Node>>,
@@ -41,20 +58,21 @@ pub struct Node {
     pub value: FieldElement,
 }
 
-// Data coming directly from raw JSONs
+/// Data coming directly from raw JSONs
 #[derive(Deserialize, Debug, Clone)]
 pub struct JSONAirdrop {
     pub address: String,
     pub amount: String,
 }
 
-// Accumulated airdrop data
+/// Accumulated airdrop data. Based on JSON data plus
 #[derive(Deserialize, Debug, Clone)]
 pub struct CumulativeAirdrop {
     pub address: String,
     pub cumulative_amount: u128,
 }
 
+/// Information about a raw JSON file
 #[derive(Debug, Clone)]
 pub struct FileNameInfo {
     pub round: u8,
