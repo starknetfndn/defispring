@@ -12,8 +12,8 @@ RUN apt-get update && apt install -y libpq-dev openssl ca-certificates
 COPY --from=builder /build/target/release/api_run .
 
 
-EXPOSE 8000
+EXPOSE 8080
 
-VOLUME /app
+VOLUME /app/raw_input
 
 CMD ["./api_run"]
