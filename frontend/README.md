@@ -27,6 +27,12 @@ All of the functionality is only for demonstration purposes. However, if you wan
 1. Change the used/supported networks in starknet-provider.tsx
 1. Make sure the used ABI is up to date (abi.json in the _app_ folder)
 
+## Implementation details
+
+When you implement this yourself, make sure of at least the following nasty details:
+
+1. All address are zero-padded at the beginning
+
 ### Installation
 
 This is a regular NextJS project with npm. Therefore, installation steps are:

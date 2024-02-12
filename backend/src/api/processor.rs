@@ -39,10 +39,10 @@ pub fn get_raw_airdrop_amount(round: Option<u8>, address: &String) -> Result<u12
         .tree
         .airdrops
         .iter()
-        .find(|a| &a.address == address)
+        .find(|a| a.address.to_lowercase() == address.to_lowercase())
     {
         Some(v) => v,
-        None => return Ok(0_128),
+        None => return Ok(0_u128),
     };
 
     Ok(drop.cumulative_amount)
@@ -100,16 +100,16 @@ pub fn transform_airdrops_to_cumulative_rounds(
         let mut curr_round_data: Vec<CumulativeAirdrop> = Vec::new();
         for key in cum_map.cumulative_amounts.keys() {
             let address_cumulative = CumulativeAirdrop {
-                address: key.to_string(),
+                address: key.to_string().to_lowercase(),
                 cumulative_amount: cum_map.cumulative_amounts[key],
             };
             curr_round_data.push(address_cumulative);
         }
 
-        // Sort because hashmap iterator returns keys in arbitrary order
-        curr_round_data.sort_by(|a, b| a.address.cmp(&b.address));
-
         if curr_round_data.len() > 0 {
+            // Sort because hashmap iterator returns keys in arbitrary order
+            curr_round_data.sort_by(|a, b| a.address.to_lowercase().cmp(&b.address.to_lowercase()));
+
             let tree = MerkleTree::new(curr_round_data);
 
             let round_drop = RoundTreeData {
@@ -136,7 +136,7 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundCumulativeMap
             };
 
             *all_rounds_cums
-                .entry(data.address.clone())
+                .entry(data.address.to_lowercase().clone())
                 .or_insert_with(|| 0) += amount;
         }
         let map = RoundCumulativeMaps {
@@ -200,6 +200,7 @@ fn retrieve_valid_files() -> Vec<FileNameInfo> {
             }
         }
     }
+    println!("Found {} valid input files", valid_files.len());
     valid_files
 }
 
@@ -210,7 +211,7 @@ impl RoundTreeData {
             .tree
             .airdrops
             .iter()
-            .filter(|a| &a.address == address)
+            .filter(|a| a.address.to_lowercase() == address.to_lowercase())
             .cloned()
             .collect();
 

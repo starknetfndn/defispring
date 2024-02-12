@@ -19,7 +19,7 @@ use utoipa::{IntoParams, OpenApi};
         schemas(CairoCalldata)
     ),
     tags(
-        (name = "DeFi REST API", description = "DeFi airdrop endpoints")
+        (name = "DeFi Incentives REST API", description = "DeFi airdrop endpoints")
     ),
 )]
 pub struct ApiDoc;
@@ -47,7 +47,7 @@ pub async fn get_calldata(query: web::Query<GetCalldataParams>) -> impl Responde
     // Get the round parameter. Use the max found round if it's not given in query parameters or is 0
     let round = if query.round == Some(0) { None } else { query.round };
 
-    let calldata = get_raw_calldata(round, &query.address);
+    let calldata = get_raw_calldata(round, &query.address.to_lowercase());
  
     match calldata {
         Ok(value) => HttpResponse::Ok().json(value),
@@ -64,7 +64,7 @@ pub struct GetAirdropAmountParams {
 }
 
 #[utoipa::path(
-    tag = "Gets the allocated airdrop amount for a given address",
+    tag = "Gets the allocated, accumulated airdrop amount for a given address",
     responses(
         (status = 200, description= "The allocated amount in hex", body = u128),       
     ),
@@ -77,7 +77,7 @@ pub async fn get_airdrop_amount(query: web::Query<GetAirdropAmountParams>) -> im
     // Get the round parameter. Use the max found round if it's not given in query parameters or is 0
     let round = if query.round == Some(0) { None } else { query.round };
     
-    match get_raw_airdrop_amount(round, &query.address) {
+    match get_raw_airdrop_amount(round, &query.address.to_lowercase()) {
         Ok(value) => HttpResponse::Ok().json(format!("{:#x}", value)),
         Err(value) => HttpResponse::BadRequest().json(value)
     }

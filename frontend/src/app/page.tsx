@@ -1,7 +1,8 @@
 "use client";
-import WalletBar from "@/components/WalletBar";
+import WalletBar, { zeroPadHex } from "@/components/WalletBar";
 import contractAbi from "./abi.json";
 import {
+  reddioProvider,
   useAccount,
   useContract,
   useContractRead,
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/Button";
 export default function Home() {
   const BASE_BACKEND_URL = "http://127.0.0.1:8080/";
   const CONTRACT_ADDRESS =
-    "0x15e03e938de3216dd841f47ce0aa383056832624690b66edce5d3207835d680";
+    "0x120412481b79cfd73eb1160dee54fc944db7dffbd46ff1129f7de27c472ab6a";
 
   const { contract } = useContract({
     abi: contractAbi,
@@ -31,13 +32,14 @@ export default function Home() {
 
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [alreadyClaimed, setAlreadyClaimed] = useState<BigInt>(BigInt(0));
-  const [airdropAmount, setAirdropAmount] = useState<string>("");
+  const [airdropAmount, setAirdropAmount] = useState<BigInt>(BigInt(0));
   const [receivedcalldata, setReceivedCalldata] = useState<ClaimCalldata>();
   const [isClaimReady, setIsClaimReady] = useState<boolean>(false);
+  const [errors, setErrors] = useState<String>("");
 
   useEffect(() => {
     if (address) {
-      setWalletAddress(address!);
+      setWalletAddress(zeroPadHex(address!));
     }
   }, [address]);
 
@@ -62,6 +64,11 @@ export default function Home() {
 
   const calls = useMemo(() => {
     if (!walletAddress || !contract || !receivedcalldata) return [];
+
+    if (!receivedcalldata.amount) {
+      setErrors(receivedcalldata.toString());
+      return;
+    }
 
     return contract.populateTransaction["claim"]!(
       receivedcalldata.amount,
@@ -106,8 +113,10 @@ export default function Home() {
       BASE_BACKEND_URL + "get_airdrop_amount?address=" + walletAddress
     );
     const amount = await response.json();
+    console.log("got amount", amount);
+    let num = BigInt(amount);
 
-    setAirdropAmount(amount);
+    setAirdropAmount(num);
   };
 
   return (
@@ -142,8 +151,13 @@ export default function Home() {
           <div>Already claimed: {alreadyClaimed.toString()}</div>
         )}
         <div>
-          <p>Allocated airdrop amount: {airdropAmount}</p>
+          <p>Total allocated airdrop amount: {airdropAmount.toString()}</p>
         </div>
+        {errors && (
+          <div>
+            <p style={{ color: "red" }}>Errors: {errors}</p>
+          </div>
+        )}
       </div>
     </main>
   );
