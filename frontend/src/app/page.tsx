@@ -89,7 +89,6 @@ export default function Home() {
       BASE_BACKEND_URL + "get_calldata?address=" + walletAddress
     );
     const calldata: ClaimCalldata = await response.json();
-    console.log("Received claldata", calldata);
 
     setReceivedCalldata(calldata);
 

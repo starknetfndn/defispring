@@ -48,7 +48,7 @@ pub async fn get_calldata(query: web::Query<GetCalldataParams>) -> impl Responde
     let round = if query.round == Some(0) { None } else { query.round };
 
     let calldata = get_raw_calldata(round, &query.address.to_lowercase());
- 
+    
     match calldata {
         Ok(value) => HttpResponse::Ok().json(value),
         Err(value) => HttpResponse::BadRequest().json(value)
