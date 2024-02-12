@@ -106,6 +106,47 @@ fn test_claim_invalid_proof() {
     contract.claim(0x88, proof.span());
 }
 
+// Wrong person claims with proof that is correct for someone else.
+#[test]
+#[should_panic(expected: ('INVALID PROOF',))]
+fn test_claim_wrong_claimee() {
+    let contract = deploy();
+    start_prank(CheatTarget::One(contract.contract_address), ADMIN_ADDR.try_into().unwrap());
+    contract.add_root(0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe);
+
+    // This root is for CLAIMEE_1. Testing if CLAIMEE_2 claims it.
+    start_prank(
+        CheatTarget::One(contract.contract_address), CLAIMEE_2.try_into().unwrap()
+    );
+
+    let proof_1 = array![
+        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
+        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98,
+    ];
+
+    contract.claim(0x88, proof_1.span());
+}
+
+#[test]
+#[should_panic(expected: ('INVALID PROOF',))]
+fn test_claim_wrong_amount() {
+    let contract = deploy();
+    start_prank(CheatTarget::One(contract.contract_address), ADMIN_ADDR.try_into().unwrap());
+    contract.add_root(0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe);
+
+    start_prank(
+        CheatTarget::One(contract.contract_address), CLAIMEE_1.try_into().unwrap()
+    );
+
+    let proof_1 = array![
+        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
+        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98,
+    ];
+
+    // correct amount is 0x88.
+    contract.claim(0x89, proof_1.span());
+}
+
 #[test]
 fn test_compute_root() {
     let contract = deploy();
@@ -123,5 +164,3 @@ fn test_compute_root() {
 }
 
 // TODO: claim multiple times over multiple rounds, claim twice but with different round
-
-// TODO: fuzz test build tree and claim against it
