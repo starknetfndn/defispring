@@ -37,12 +37,6 @@ export default function Home() {
   const [isClaimReady, setIsClaimReady] = useState<boolean>(false);
   const [errors, setErrors] = useState<String>("");
 
-  useEffect(() => {
-    if (address) {
-      setWalletAddress(zeroPadHex(address!));
-    }
-  }, [address]);
-
   const {
     data: alreadyClaimedData,
     isError,
@@ -57,10 +51,34 @@ export default function Home() {
   });
 
   useEffect(() => {
+    if (address) {
+      setWalletAddress(zeroPadHex(address!));
+    }
+  }, [address]);
+
+  useEffect(() => {
     if (!isLoading && !isError) {
       setAlreadyClaimed(alreadyClaimedData as BigInt);
     }
   }, [isLoading, isError, alreadyClaimedData]);
+
+  useEffect(() => {
+    const getAllocation = async () => {
+      if (!walletAddress) {
+        console.error("No wallet connected");
+        return;
+      }
+      const response = await fetch(
+        BASE_BACKEND_URL + "get_allocation_amount?address=" + walletAddress
+      );
+      const amount = await response.json();
+      console.log("got amount", amount);
+      let num = BigInt(amount);
+
+      setAllocationAmount(num);
+    };
+    getAllocation();
+  }, [walletAddress]);
 
   const calls = useMemo(() => {
     if (!walletAddress || !contract || !receivedcalldata) return [];
@@ -102,22 +120,6 @@ export default function Home() {
     }
     await writeAsync();
   };
-
-  const getAllocationAmount = async () => {
-    if (!walletAddress) {
-      console.error("No wallet connected");
-      return;
-    }
-    const response = await fetch(
-      BASE_BACKEND_URL + "get_allocation_amount?address=" + walletAddress
-    );
-    const amount = await response.json();
-    console.log("got amount", amount);
-    let num = BigInt(amount);
-
-    setAllocationAmount(num);
-  };
-
   return (
     <main className="flex flex-col items-center justify-center min-h-screen gap-12">
       <WalletBar />
@@ -130,14 +132,6 @@ export default function Home() {
         </div>
         <div style={{ padding: "5px" }}>
           <Button onClick={claim2}>Claim allocation</Button>
-        </div>
-      </div>
-      <div>
-        <p>
-          <b>Read functionality</b>
-        </p>
-        <div>
-          <Button onClick={getAllocationAmount}>Get allocated amount</Button>
         </div>
       </div>
       <div>
