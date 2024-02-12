@@ -38,5 +38,5 @@ When you implement this yourself, make sure of at least the following nasty deta
 This is a regular NextJS project with npm. Therefore, installation steps are:
 
 1. Run `npm install`
-1. Run `npm run buld` to build some metadata needed by NextJS
+1. Run `npm run build` to build some metadata needed by NextJS
 1. Run `npm run dev` to run locally

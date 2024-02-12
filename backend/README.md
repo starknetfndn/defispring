@@ -4,9 +4,17 @@ The backend is written in Rust. Running the project launches a REST API that can
 
 ## Deployment
 
-The backend is packaged in a Docker container. It can be be deployed to any cloud architecture that supports containers.
+The backend can be run in a Docker container. It can be be deployed to any cloud architecture that supports containers.
 
-TODO
+```
+$ cd backend
+$ docker build -t allocation-backend
+$ docker run -v DIR_WITH_INPUT_ZIP:/app/raw_input -p 8080:8080 allocation-backend
+```
+
+Make sure that DIR_WITH_INPUT_ZIP is a folder on your machine that contains .zip files with the allocation specifications.
+
+TODO: push Docker image to a registry.
 
 ## Running the project locally for testing purposes
 
