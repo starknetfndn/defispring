@@ -20,29 +20,24 @@ The Swagger UI can be used also to test the endpoints.
 
 An example deployment, with Swagger UI, can be found at TODO.
 
-## Project structure
-
-The project has the following notable folders:
-
-- _contract_: Contains the Cairo contract and everything related to it
-- _src_: Contains the Rust backend
-- _tests_: Contains unit tests for the backend
-
 ## Concepts
 
 The project utilizies the following concepts:
 
-- _round_: Airdrops are organized in various rounds. One round can contain any number of airdrops for addresses. The first round is number 1 and each subsequent round should increase the number by one
+- _round_: Airdrops are organized in various rounds. One round can contain any number of airdrops for addresses. Typically rounds start from 1 but as long as the number is increasing you can start from any (small) number.
+- _root_: Refers to the root of a Merkle tree. This root dictates which addresses are eligible for how many tokens.
 
 ## Adding new data for airdrops
 
-Once you launch the API, the project first extracts all of the airdrop information from files. These files are located in the _src/raw_input_ folder.
+Once you launch the API the project first extracts all of the airdrop information from files. The information is then stored in the program memory, for the API endpoints to utilize.
+
+The input files should be located in the _./raw_input_ folder.
 
 The files have the following characteristics:
 
 - The files should be JSON files compressed with ZIP. Don't use encryption or other non-default options
 - Each ZIP file should have the format: raw_X.zip where X is the round number
-- Each ZIP file should contain only one file with the same name, but with file extension .JSON
+- Each ZIP file should contain only one file with the same name, but with file extension _.JSON_
 - Each JSON file should have the following format:
 
 ```
@@ -59,4 +54,4 @@ The files have the following characteristics:
 
 ```
 
-The addresses in the JSON files should be Starknet wallet addresses for the recipients of the airdrop. The amounts should be the amount in its basic units: TODO.
+The addresses in the JSON files should be Starknet wallet addresses for the recipients of the airdrop. The amounts should be the amount in its base units: 1 full STRK token is expressed as _1000000000000000000_. No decimal amounts are allowed.
