@@ -1,6 +1,6 @@
 # Backend documentation
 
-The backend is written in Rust. Running the project launches a REST API that can be used to generate airdrop data.
+The backend is written in Rust. Running the project launches a REST API that can be used to generate allocation data.
 
 ## Deployment
 
@@ -24,12 +24,12 @@ An example deployment, with Swagger UI, can be found at TODO.
 
 The project utilizies the following concepts:
 
-- _round_: Airdrops are organized in various rounds. One round can contain any number of airdrops for addresses. Typically rounds start from 1 but as long as the number is increasing you can start from any (small) number.
+- _round_: Allocations are organized in various rounds. One round can contain any number of allocations for addresses. Typically rounds start from 1 but as long as the number is increasing you can start from any (small) number.
 - _root_: Refers to the root of a Merkle tree. This root dictates which addresses are eligible for how many tokens.
 
-## Adding new data for airdrops
+## Adding new data for allocations
 
-Once you launch the API the project first extracts all of the airdrop information from files. The information is then stored in the program memory, for the API endpoints to utilize.
+Once you launch the API the project first extracts all of the allocation information from files. The information is then stored in the program memory, for the API endpoints to utilize.
 
 The input files should be located in the _./raw_input_ folder.
 
@@ -54,4 +54,4 @@ The files have the following characteristics:
 
 ```
 
-The addresses in the JSON files should be Starknet wallet addresses for the recipients of the airdrop. The amounts should be the amount in its base units: 1 full STRK token is expressed as _1000000000000000000_. No decimal amounts are allowed.
+The addresses in the JSON files should be Starknet wallet addresses for the recipients of the allocation. The amounts should be the amount in its base units: 1 full STRK token is expressed as _1000000000000000000_. No decimal amounts are allowed.

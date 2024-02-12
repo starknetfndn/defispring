@@ -1,6 +1,6 @@
 # Example frontend
 
-This is an example frontend that can be used to claim airdrops.
+This is an example frontend that can be used to claim allocations.
 
 ## Overview
 

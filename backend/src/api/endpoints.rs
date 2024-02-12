@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Responder};
 
 use super::{
-    processor::{get_raw_airdrop_amount, get_raw_calldata, get_raw_root}, structs::{CairoCalldata, RootQueryResult},
+    processor::{get_raw_allocation_amount, get_raw_calldata, get_raw_root}, structs::{CairoCalldata, RootQueryResult},
 };
 use actix_web::get;
 use serde::Deserialize;
@@ -11,14 +11,14 @@ use utoipa::{IntoParams, OpenApi};
 #[openapi(
     paths(
         get_root,
-        get_airdrop_amount,
+        get_allocation_amount,
         get_calldata
     ),
     components(
         schemas(CairoCalldata, RootQueryResult)
     ),
     tags(
-        (name = "DeFi Incentives REST API", description = "DeFi airdrop endpoints")
+        (name = "DeFi Incentives REST API", description = "DeFi incentives allocation endpoints")
     ),
 )]
 pub struct ApiDoc;
@@ -55,7 +55,7 @@ pub async fn get_calldata(query: web::Query<GetCalldataParams>) -> impl Responde
 }
 
 #[derive(Deserialize, Debug, IntoParams)]
-pub struct GetAirdropAmountParams {
+pub struct GetAllocationAmountParams {
     /// Which round to query for. Leave out or 0 for the latest round.
     round: Option<u8>,
     /// Which address to query for.
@@ -63,20 +63,20 @@ pub struct GetAirdropAmountParams {
 }
 
 #[utoipa::path(
-    tag = "Gets the allocated, accumulated airdrop amount for a given address",
+    tag = "Gets the allocated, accumulated amount for a given address",
     responses(
         (status = 200, description= "The allocated amount in hex", body = u128),       
     ),
     params(
-        GetAirdropAmountParams
+        GetAllocationAmountParams
     ),    
 )]
-#[get("/get_airdrop_amount")]
-pub async fn get_airdrop_amount(query: web::Query<GetAirdropAmountParams>) -> impl Responder {
+#[get("/get_allocation_amount")]
+pub async fn get_allocation_amount(query: web::Query<GetAllocationAmountParams>) -> impl Responder {
     // Get the round parameter. Use the max found round if it's not given in query parameters or is 0
     let round = if query.round == Some(0) { None } else { query.round };
     
-    match get_raw_airdrop_amount(round, &query.address.to_lowercase()) {
+    match get_raw_allocation_amount(round, &query.address.to_lowercase()) {
         Ok(value) => HttpResponse::Ok().json(value),
         Err(value) => HttpResponse::BadRequest().json(value)
     }

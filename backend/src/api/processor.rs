@@ -6,8 +6,8 @@ use super::{
     data_storage::get_all_data,
     merkle_tree::felt_to_b16,
     structs::{
-        CairoCalldata, CumulativeAirdrop, FileNameInfo, JSONAirdrop, MerkleTree, RootQueryResult,
-        RoundAmounts, RoundTreeData,
+        CairoCalldata, CumulativeAllocation, FileNameInfo, JSONAllocation, MerkleTree,
+        RootQueryResult, RoundAmounts, RoundTreeData,
     },
 };
 use zip::ZipArchive;
@@ -29,7 +29,7 @@ pub fn get_raw_calldata(round: Option<u8>, address: &String) -> Result<CairoCall
     Ok(calldata)
 }
 
-pub fn get_raw_airdrop_amount(round: Option<u8>, address: &String) -> Result<u128, String> {
+pub fn get_raw_allocation_amount(round: Option<u8>, address: &String) -> Result<u128, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
         Err(value) => return Err(value),
@@ -37,7 +37,7 @@ pub fn get_raw_airdrop_amount(round: Option<u8>, address: &String) -> Result<u12
 
     let drop = match relevant_data
         .tree
-        .airdrops
+        .allocations
         .iter()
         .find(|a| a.address.to_lowercase() == address.to_lowercase())
     {
@@ -68,7 +68,7 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
     let use_round = match round {
         Some(v) => v,
         None => match round_data.iter().max_by_key(|&p| p.round) {
-            None => return Err("No airdrop data found".to_string()),
+            None => return Err("No allocation data found".to_string()),
             Some(p) => p.round,
         },
     };
@@ -78,7 +78,7 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
         .cloned()
         .collect();
     if relevant_data.len() != 1 {
-        return Err("No airdrop data available".to_string());
+        return Err("No allocation data available".to_string());
     }
     Ok(relevant_data.get(0).unwrap().clone())
 }
@@ -90,26 +90,26 @@ struct RoundAmountMaps {
     cumulative_amounts: HashMap<String, u128>,
 }
 
-/// Converts JSON airdrop data into cumulative tree+data per round
-pub fn transform_airdrops_to_cumulative_rounds(
-    mut airdrops: Vec<RoundAmounts>,
+/// Converts JSON allocation data into cumulative tree+data per round
+pub fn transform_allocations_to_cumulative_rounds(
+    mut allocations: Vec<RoundAmounts>,
 ) -> Vec<RoundTreeData> {
-    if airdrops.len() == 0 {
+    if allocations.len() == 0 {
         return Vec::new();
     }
-    airdrops.sort_by(|a, b| a.round.cmp(&b.round));
+    allocations.sort_by(|a, b| a.round.cmp(&b.round));
 
-    let cumulative_amount_maps = map_cumulative_amounts(airdrops);
+    let cumulative_amount_maps = map_cumulative_amounts(allocations);
 
     let mut accumulated_total_amount = 0_u128;
 
     let mut rounds: Vec<RoundTreeData> = Vec::new();
     for cum_map in cumulative_amount_maps.iter() {
-        let mut curr_round_data: Vec<CumulativeAirdrop> = Vec::new();
+        let mut curr_round_data: Vec<CumulativeAllocation> = Vec::new();
         let mut round_total_amount = 0_u128;
 
         for key in cum_map.cumulative_amounts.keys() {
-            let address_cumulative = CumulativeAirdrop {
+            let address_cumulative = CumulativeAllocation {
                 address: key.to_string().to_lowercase(),
                 cumulative_amount: cum_map.cumulative_amounts[key],
             };
@@ -148,15 +148,15 @@ pub fn transform_airdrops_to_cumulative_rounds(
     rounds
 }
 
-/// Converts JSON airdrop data into cumulative map-per-round data
-fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundAmountMaps> {
+/// Converts JSON allocation data into cumulative map-per-round data
+fn map_cumulative_amounts(allocations: Vec<RoundAmounts>) -> Vec<RoundAmountMaps> {
     let mut all_rounds_cums: HashMap<String, u128> = HashMap::new();
     let mut round_maps: Vec<RoundAmountMaps> = Vec::new();
 
-    for airdrop in airdrops.iter() {
+    for allocation in allocations.iter() {
         let mut curr_round_amounts: HashMap<String, u128> = HashMap::new();
 
-        for data in airdrop.amounts.iter() {
+        for data in allocation.amounts.iter() {
             let amount = match data.amount.parse::<u128>() {
                 Ok(value) => value,
                 Err(_) => 0_u128, // TODO: what to do when data is invalid?
@@ -171,7 +171,7 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundAmountMaps> {
                 .or_insert_with(|| 0) += amount;
         }
         let map = RoundAmountMaps {
-            round: airdrop.round,
+            round: allocation.round,
             round_amounts: curr_round_amounts,
             cumulative_amounts: all_rounds_cums.clone(),
         };
@@ -182,8 +182,8 @@ fn map_cumulative_amounts(airdrops: Vec<RoundAmounts>) -> Vec<RoundAmountMaps> {
     round_maps
 }
 
-// Reads and accumulates all airdrop info for all rounds
-pub fn read_airdrops() -> Vec<RoundTreeData> {
+// Reads and accumulates all allocation info for all rounds
+pub fn read_allocations() -> Vec<RoundTreeData> {
     let files = retrieve_valid_files();
     let mut round_amounts: Vec<RoundAmounts> = vec![];
 
@@ -198,17 +198,17 @@ pub fn read_airdrops() -> Vec<RoundTreeData> {
                 .read_to_end(&mut buffer)
                 .expect("problem reading zip");
 
-            let airdrop: Vec<JSONAirdrop> =
-                from_slice(&buffer).expect("Failed to deserialize airdrop");
+            let allocation: Vec<JSONAllocation> =
+                from_slice(&buffer).expect("Failed to deserialize allocation");
 
             let round_amount = RoundAmounts {
-                amounts: airdrop.clone(),
+                amounts: allocation.clone(),
                 round: file.round,
             };
             round_amounts.push(round_amount);
         }
     }
-    transform_airdrops_to_cumulative_rounds(round_amounts)
+    transform_allocations_to_cumulative_rounds(round_amounts)
 }
 
 /// Returns all files that have the correct filename syntax
@@ -240,9 +240,9 @@ fn retrieve_valid_files() -> Vec<FileNameInfo> {
 /// Retrieve allocated amount for an address in a specific round
 impl RoundTreeData {
     pub fn address_amount(&self, address: &str) -> Result<u128, String> {
-        let address_drop: Vec<CumulativeAirdrop> = self
+        let address_drop: Vec<CumulativeAllocation> = self
             .tree
-            .airdrops
+            .allocations
             .iter()
             .filter(|a| a.address.to_lowercase() == address.to_lowercase())
             .cloned()

@@ -32,7 +32,7 @@ export default function Home() {
 
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [alreadyClaimed, setAlreadyClaimed] = useState<BigInt>(BigInt(0));
-  const [airdropAmount, setAirdropAmount] = useState<BigInt>(BigInt(0));
+  const [allocationAmount, setAllocationAmount] = useState<BigInt>(BigInt(0));
   const [receivedcalldata, setReceivedCalldata] = useState<ClaimCalldata>();
   const [isClaimReady, setIsClaimReady] = useState<boolean>(false);
   const [errors, setErrors] = useState<String>("");
@@ -103,19 +103,19 @@ export default function Home() {
     await writeAsync();
   };
 
-  const getAirdropAmount = async () => {
+  const getAllocationAmount = async () => {
     if (!walletAddress) {
       console.error("No wallet connected");
       return;
     }
     const response = await fetch(
-      BASE_BACKEND_URL + "get_airdrop_amount?address=" + walletAddress
+      BASE_BACKEND_URL + "get_allocation_amount?address=" + walletAddress
     );
     const amount = await response.json();
     console.log("got amount", amount);
     let num = BigInt(amount);
 
-    setAirdropAmount(num);
+    setAllocationAmount(num);
   };
 
   return (
@@ -126,10 +126,10 @@ export default function Home() {
           <b>Execute</b>
         </p>
         <div>
-          <Button onClick={claim}>Prepare airdrop claim</Button>
+          <Button onClick={claim}>Prepare allocation claim</Button>
         </div>
         <div style={{ padding: "5px" }}>
-          <Button onClick={claim2}>Claim airdrop</Button>
+          <Button onClick={claim2}>Claim allocation</Button>
         </div>
       </div>
       <div>
@@ -137,9 +137,7 @@ export default function Home() {
           <b>Read functionality</b>
         </p>
         <div>
-          <Button onClick={getAirdropAmount}>
-            Get allocated airdrop amount
-          </Button>
+          <Button onClick={getAllocationAmount}>Get allocated amount</Button>
         </div>
       </div>
       <div>
@@ -150,7 +148,7 @@ export default function Home() {
           <div>Already claimed: {alreadyClaimed.toString()}</div>
         )}
         <div>
-          <p>Total allocated airdrop amount: {airdropAmount.toString()}</p>
+          <p>Total allocated amount: {allocationAmount.toString()}</p>
         </div>
         {errors && (
           <div>

@@ -2,8 +2,8 @@ use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashMap, str::FromStr};
 
 use defispring::api::{
-    processor::read_airdrops,
-    structs::{JSONAirdrop, MerkleTree, RoundTreeData},
+    processor::read_allocations,
+    structs::{JSONAllocation, MerkleTree, RoundTreeData},
 };
 
 // mockup of a function that will be used in the SC
@@ -52,8 +52,8 @@ fn cairo_root_generating(original_calldata: Vec<String>, root: FieldElement) -> 
 /*
 #[test]
 fn valid_addresses() {
-    let addresses: Vec<String> = read_airdrop(1u8).into_iter().map(|a| a.address).collect();
-    let mt = MerkleTree::new(read_airdrop(1u8));
+    let addresses: Vec<String> = read_allocation(1u8).into_iter().map(|a| a.address).collect();
+    let mt = MerkleTree::new(read_allocation(1u8));
     let root = mt.root.value.clone();
 
     for address in addresses.iter() {
@@ -67,7 +67,7 @@ fn valid_addresses() {
 #[test]
 fn fail_with_random_addresses() {
     let addresses = vec!["0x123", "0xababcd"];
-    let mt = MerkleTree::new(read_airdrop(1u8));
+    let mt = MerkleTree::new(read_allocation(1u8));
 
     for address in addresses.iter() {
         assert!(mt.address_calldata(address).is_err());
@@ -76,8 +76,8 @@ fn fail_with_random_addresses() {
 
 #[test]
 fn fail_with_calldata_tempering() {
-    let addresses: Vec<String> = read_airdrop(1u8).into_iter().map(|a| a.address).collect();
-    let mt = MerkleTree::new(read_airdrop(1u8));
+    let addresses: Vec<String> = read_allocation(1u8).into_iter().map(|a| a.address).collect();
+    let mt = MerkleTree::new(read_allocation(1u8));
     let hacker_address =
         String::from("0x029AF9CF62C9d871453F3b033e514dc790ce578E0e07241d6a5feDF19cEEaF08");
     let root = mt.root.value.clone();
@@ -94,16 +94,16 @@ fn fail_with_calldata_tempering() {
 /*
 #[test]
 fn hmm() {
-    let mut drop: Vec<JSONAirdrop> = vec![];
-    drop.push(JSONAirdrop {
+    let mut drop: Vec<JSONAllocation> = vec![];
+    drop.push(JSONAllocation {
         address: "0x1".to_string(),
         amount: "5".to_string(),
     });
-    drop.push(JSONAirdrop {
+    drop.push(JSONAllocation {
         address: "0x2".to_string(),
         amount: "6".to_string(),
     });
-    drop.push(JSONAirdrop {
+    drop.push(JSONAllocation {
         address: "0x3".to_string(),
         amount: "7".to_string(),
     });

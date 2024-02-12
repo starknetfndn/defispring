@@ -1,7 +1,7 @@
 use actix_web::{middleware, App, HttpServer};
 use defispring::api::{
     data_storage::update_api_data,
-    endpoints::{get_airdrop_amount, get_calldata, get_root, ApiDoc},
+    endpoints::{get_allocation_amount, get_calldata, get_root, ApiDoc},
 };
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -16,7 +16,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Origin", "*")))
             .service(get_calldata)
-            .service(get_airdrop_amount)
+            .service(get_allocation_amount)
             .service(get_root)
             .service(
                 SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()),

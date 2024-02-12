@@ -19,14 +19,14 @@ pub struct RoundTreeData {
 /// Used for some intermediary calculations
 pub struct RoundAmounts {
     pub round: u8,
-    pub amounts: Vec<JSONAirdrop>,
+    pub amounts: Vec<JSONAllocation>,
 }
 
-/// A Merkle tree with extra airdrop data for easier access
+/// A Merkle tree with extra allocation data for easier access
 #[derive(Debug, Clone)]
 pub struct MerkleTree {
     pub root: Node,
-    pub airdrops: Vec<CumulativeAirdrop>,
+    pub allocations: Vec<CumulativeAllocation>,
 }
 
 /// Calldata to be used for the associated Cairo contract
@@ -60,14 +60,14 @@ pub struct Node {
 
 /// Data coming directly from raw JSONs
 #[derive(Deserialize, Debug, Clone)]
-pub struct JSONAirdrop {
+pub struct JSONAllocation {
     pub address: String,
     pub amount: String,
 }
 
-/// Accumulated airdrop data. Based on JSON data plus
+/// Accumulated allocation data. Based on JSON data plus
 #[derive(Deserialize, Debug, Clone)]
-pub struct CumulativeAirdrop {
+pub struct CumulativeAllocation {
     pub address: String,
     pub cumulative_amount: u128,
 }

@@ -1,7 +1,7 @@
 use starknet_crypto::{pedersen_hash, FieldElement};
 use std::{collections::HashSet, str::FromStr, vec};
 
-use super::structs::{CairoCalldata, CumulativeAirdrop, MerkleTree, Node};
+use super::structs::{CairoCalldata, CumulativeAllocation, MerkleTree, Node};
 
 pub fn strip_leading_zeroes(hex: &str) -> String {
     if hex.len() <= 3 || &hex[..2] != "0x" {
@@ -19,8 +19,8 @@ pub fn strip_leading_zeroes(hex: &str) -> String {
 }
 
 impl MerkleTree {
-    pub fn new(airdrops: Vec<CumulativeAirdrop>) -> Self {
-        let mut leaves: Vec<Node> = airdrops
+    pub fn new(allocations: Vec<CumulativeAllocation>) -> Self {
+        let mut leaves: Vec<Node> = allocations
             .clone()
             .into_iter()
             .map(|a| Node::new_leaf(a))
@@ -33,7 +33,7 @@ impl MerkleTree {
 
         let root = build_tree(leaves);
 
-        MerkleTree { root, airdrops }
+        MerkleTree { root, allocations }
     }
 
     pub fn address_calldata(&self, address: &str) -> Result<CairoCalldata, String> {
@@ -64,13 +64,13 @@ impl MerkleTree {
         // reverse to leaf first root last
         hashes = hashes.into_iter().rev().collect();
 
-        let airdrop = self
-            .airdrops
+        let allocation = self
+            .allocations
             .iter()
             .find(|a| &FieldElement::from_str(&a.address).unwrap() == &felt_address)
             .unwrap();
 
-        let amount = FieldElement::from(airdrop.cumulative_amount);
+        let amount = FieldElement::from(allocation.cumulative_amount);
 
         let hash_strings = hashes.iter().map(felt_to_b16).collect();
 
@@ -106,9 +106,9 @@ impl Node {
             value,
         }
     }
-    fn new_leaf(airdrop: CumulativeAirdrop) -> Self {
-        let address = FieldElement::from_str(&strip_leading_zeroes(&airdrop.address)).unwrap();
-        let cumulated_amount = FieldElement::from(airdrop.cumulative_amount);
+    fn new_leaf(allocation: CumulativeAllocation) -> Self {
+        let address = FieldElement::from_str(&strip_leading_zeroes(&allocation.address)).unwrap();
+        let cumulated_amount = FieldElement::from(allocation.cumulative_amount);
         // keep order address, amount (cannot use fn hash)
         let value = pedersen_hash(&address, &cumulated_amount);
 
