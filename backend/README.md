@@ -33,13 +33,13 @@ An example deployment, with Swagger UI, can be found at TODO.
 The project utilizies the following concepts:
 
 - _round_: Allocations are organized in various rounds. One round can contain any number of allocations for addresses. Typically rounds start from 1 but as long as the number is increasing you can start from any (small) number.
-- _root_: Refers to the root of a Merkle tree. This root dictates which addresses are eligible for how many tokens.
+- _root_: Refers to the root of a Merkle tree. This root dictates which addresses are eligible for how many tokens. One root exists for one round.
 
 ## Adding new data for allocations
 
-Once you launch the API the project first extracts all of the allocation information from files. The information is then stored in the program memory, for the API endpoints to utilize.
+Once you launch the backend the project first extracts all of the allocation information from files. The information is then stored in the program memory, for the backend/API endpoints to utilize.
 
-If you add new allocation files you need to restart the API so it starts processing the files. The processing may take even an hour if there is a lot of data. The service will output "API ready" once everything has been processed.
+If you add new allocation files you need to restart the backend so it starts processing the files.
 
 The input files should be located in the _./raw_input_ folder.
 
@@ -65,3 +65,11 @@ The files have the following characteristics:
 ```
 
 The addresses in the JSON files should be Starknet wallet addresses for the recipients of the allocation. The amounts should be the amount in its base units: 1 full STRK token is expressed as _1000000000000000000_. No decimal amounts are allowed.
+
+## Notes on performance
+
+If there are a lot of entries in the input files it may take a while to get the backend started. Processing a file with a million entries may take an hour. The program is single-threaded. The backend will output "API ready" once everything has been processed.
+
+The main problem with this is that the same processing is performed every time the backend is started, because all the trees are only stored in memory. This approach may need to be revised in the future.
+
+The main bottlenect in the performance is calculating the hash values for the tree. There isn't much that can be done to improve that directly.
