@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use defispring::api::{
     processor::transform_allocations_to_cumulative_rounds,
-    structs::{JSONAllocation, MerkleTree, RoundAmounts, RoundTreeData},
+    structs::{JSONAllocation, RoundAmounts},
 };
 
 #[test]
@@ -30,7 +28,7 @@ fn test_odd_data() {
 
 #[test]
 fn test_empty_data() {
-    let mut drop: Vec<JSONAllocation> = vec![];
+    let drop: Vec<JSONAllocation> = vec![];
 
     let mut round_data: Vec<RoundAmounts> = Vec::new();
     round_data.push(RoundAmounts {
