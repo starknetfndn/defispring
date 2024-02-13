@@ -2,7 +2,6 @@
 import WalletBar, { zeroPadHex } from "@/components/WalletBar";
 import contractAbi from "./abi.json";
 import {
-  reddioProvider,
   useAccount,
   useContract,
   useContractRead,
@@ -52,7 +51,9 @@ export default function Home() {
 
   useEffect(() => {
     if (address) {
-      setWalletAddress(zeroPadHex(address!));
+      const addr = zeroPadHex(address!);
+      setWalletAddress(addr);
+      prepareClaim(addr);
     }
   }, [address]);
 
@@ -64,20 +65,17 @@ export default function Home() {
 
   useEffect(() => {
     const getAllocation = async () => {
-      if (!walletAddress) {
-        console.error("No wallet connected");
-        return;
-      }
       const response = await fetch(
         BASE_BACKEND_URL + "get_allocation_amount?address=" + walletAddress
       );
       const amount = await response.json();
-      console.log("got amount", amount);
       let num = BigInt(amount);
 
       setAllocationAmount(num);
     };
-    getAllocation();
+    if (walletAddress) {
+      getAllocation();
+    }
   }, [walletAddress]);
 
   const calls = useMemo(() => {
@@ -94,17 +92,23 @@ export default function Home() {
     );
   }, [contract, receivedcalldata, walletAddress]);
 
-  const { writeAsync, data, isPending } = useContractWrite({
+  const {
+    writeAsync: callClaim,
+    data,
+    isPending,
+  } = useContractWrite({
     calls,
   });
 
-  const claim = async () => {
-    if (!walletAddress) {
+  // Retrieves calldata for the claim
+  const prepareClaim = async (usedAddress: String) => {
+    if (!usedAddress) {
       console.error("No wallet connected");
       return;
     }
+
     const response = await fetch(
-      BASE_BACKEND_URL + "get_calldata?address=" + walletAddress
+      BASE_BACKEND_URL + "get_calldata?address=" + usedAddress
     );
     const calldata: ClaimCalldata = await response.json();
 
@@ -113,27 +117,28 @@ export default function Home() {
     setIsClaimReady(true);
   };
 
-  const claim2 = async () => {
+  const claim = async () => {
     if (!isClaimReady) {
       console.error("Prepare the claim first");
       return;
     }
-    await writeAsync();
+    await callClaim();
   };
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen gap-12">
       <WalletBar />
-      <div>
-        <p>
-          <b>Execute</b>
-        </p>
+      {isClaimReady && (
         <div>
-          <Button onClick={claim}>Prepare allocation claim</Button>
+          <p>
+            <b>Execute</b>
+          </p>
+
+          <div>
+            <Button onClick={claim}>Claim allocation</Button>
+          </div>
         </div>
-        <div style={{ padding: "5px" }}>
-          <Button onClick={claim2}>Claim allocation</Button>
-        </div>
-      </div>
+      )}
       <div>
         <p>
           <b>Results</b>

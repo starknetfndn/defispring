@@ -12,6 +12,8 @@ async fn main() -> std::io::Result<()> {
 
     let openapi = ApiDoc::openapi();
 
+    println!("API ready");
+
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Origin", "*")))
