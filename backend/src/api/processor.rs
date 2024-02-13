@@ -51,7 +51,7 @@ pub fn get_raw_allocation_amount(round: Option<u8>, address: &String) -> Result<
 pub fn get_raw_root(round: Option<u8>) -> Result<RootQueryResult, String> {
     let relevant_data = match get_round_data(round) {
         Ok(value) => value,
-        Err(_) => return Err("No data".to_string()), // TODO: check error message somehow?
+        Err(value) => return Err(value),
     };
     let res = RootQueryResult {
         root: felt_to_b16(&relevant_data.tree.root.value),
@@ -159,7 +159,7 @@ fn map_cumulative_amounts(allocations: Vec<RoundAmounts>) -> Vec<RoundAmountMaps
         for data in allocation.amounts.iter() {
             let amount = match data.amount.parse::<u128>() {
                 Ok(value) => value,
-                Err(_) => 0_u128, // TODO: what to do when data is invalid?
+                Err(_) => 0_u128, // If number is invalid assign 0
             };
 
             *curr_round_amounts

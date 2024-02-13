@@ -39,6 +39,8 @@ The project utilizies the following concepts:
 
 Once you launch the API the project first extracts all of the allocation information from files. The information is then stored in the program memory, for the API endpoints to utilize.
 
+If you add new allocation files you need to restart the API so it starts processing the files. The processing may take even an hour if there is a lot of data. The service will output "API ready" once everything has been processed.
+
 The input files should be located in the _./raw_input_ folder.
 
 The files have the following characteristics:
