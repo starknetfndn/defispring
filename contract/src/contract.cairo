@@ -39,7 +39,7 @@ mod Distributor {
 
     #[storage]
     struct Storage {
-        airdrop_claimed: LegacyMap::<ContractAddress, u128>,
+        allocation_claimed: LegacyMap::<ContractAddress, u128>,
         merkle_roots: LegacyMap::<u64, felt252>, // (round -> root)
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
@@ -91,9 +91,9 @@ mod Distributor {
                     let token = IERC20Dispatcher {
                         contract_address: STRK_ADDRESS.try_into().unwrap()
                     };
-                    let left_to_claim = amount - self.airdrop_claimed.read(claimee);
+                    let left_to_claim = amount - self.allocation_claimed.read(claimee);
                     token.transfer(claimee, u256 { high: 0, low: left_to_claim });
-                    self.airdrop_claimed.write(claimee, amount);
+                    self.allocation_claimed.write(claimee, amount);
                     self.emit(Claimed { claimee, amount });
                     break;
                 }
@@ -118,7 +118,7 @@ mod Distributor {
         }
 
         fn amount_already_claimed(self: @ContractState, claimee: ContractAddress) -> u128 {
-            self.airdrop_claimed.read(claimee)
+            self.allocation_claimed.read(claimee)
         }
 
         fn roots(self: @ContractState) -> Span<felt252> {
