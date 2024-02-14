@@ -90,6 +90,7 @@ mod Distributor {
                     let token = IERC20Dispatcher {
                         contract_address: STRK_ADDRESS.try_into().unwrap()
                     };
+                    // This line will fail with u128_sub if the left_to_claim were to be negative
                     let left_to_claim = amount - self.allocation_claimed.read(claimee);
                     token.transfer(claimee, u256 { high: 0, low: left_to_claim });
                     self.allocation_claimed.write(claimee, amount);

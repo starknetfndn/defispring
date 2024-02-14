@@ -170,5 +170,3 @@ fn test_compute_root() {
     let root = contract.get_root_for(CLAIMEE_1.try_into().unwrap(), 0x0, proof.span());
     assert(root != 0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe, 'wrong root');
 }
-
-// TODO: claim multiple times over multiple rounds, claim twice but with different round
