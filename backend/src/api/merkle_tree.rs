@@ -20,6 +20,9 @@ pub fn strip_leading_zeroes(hex: &str) -> String {
 
 impl MerkleTree {
     pub fn new(allocations: Vec<CumulativeAllocation>) -> Self {
+        if allocations.len() == 0 {
+            panic!("No data for merkle tree");
+        }
         let mut leaves: Vec<Node> = allocations
             .clone()
             .into_iter()

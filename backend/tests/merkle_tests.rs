@@ -1,10 +1,7 @@
 use starknet_crypto::{pedersen_hash, FieldElement};
-use std::{collections::HashMap, str::FromStr};
+use std::str::FromStr;
 
-use defispring::api::{
-    processor::read_allocations,
-    structs::{CairoCalldata, CumulativeAllocation, JSONAllocation, MerkleTree, RoundTreeData},
-};
+use defispring::api::structs::{CairoCalldata, CumulativeAllocation, MerkleTree};
 
 // mockup of a function that will be used in the SC
 // root will not be passed as an argument but stored in the SC
