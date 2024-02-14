@@ -68,6 +68,8 @@ The addresses in the JSON files should be Starknet wallet addresses for the reci
 
 Addition of new data has to be connected with reinitializing the backend docker container.
 
+New data (new file with data) corresponds only to the given round. The aggregation happens on start of the backend.
+
 ## Notes on performance
 
 If there are a lot of entries in the input files it may take a while to get the backend started. Processing a file with a million entries may take an hour. The program is single-threaded. The backend will output "API ready" once everything has been processed.
