@@ -114,6 +114,15 @@ fn fail_with_random_addresses() {
     assert!(result.is_err());
 }
 
+/// Tests that empty data fails to generate a tree
+#[test]
+fn fail_with_no_data() {
+    let allocations = Vec::<CumulativeAllocation>::new();
+
+    let result = std::panic::catch_unwind(|| MerkleTree::new(allocations.clone()));
+    assert!(result.is_err());
+}
+
 /// Tests that modifying the calldata fails
 #[test]
 fn fail_with_calldata_tempering() {

@@ -20,7 +20,7 @@ pub fn get_all_data() -> Vec<RoundTreeData> {
 pub fn update_api_data() {
     let mut data = ROUND_DATA.write().expect("Failed to acquire write lock");
 
-    let drops = read_allocations();
+    let drops = read_allocations("./raw_input".to_string());
 
     *data = drops;
 }

@@ -183,8 +183,8 @@ fn map_cumulative_amounts(allocations: Vec<RoundAmounts>) -> Vec<RoundAmountMaps
 }
 
 // Reads and accumulates all allocation info for all rounds
-pub fn read_allocations() -> Vec<RoundTreeData> {
-    let files = retrieve_valid_files();
+pub fn read_allocations(filepath: String) -> Vec<RoundTreeData> {
+    let files = retrieve_valid_files(filepath);
     let mut round_amounts: Vec<RoundAmounts> = vec![];
 
     for file in files.iter() {
@@ -212,11 +212,12 @@ pub fn read_allocations() -> Vec<RoundTreeData> {
 }
 
 /// Returns all files that have the correct filename syntax
-fn retrieve_valid_files() -> Vec<FileNameInfo> {
+pub fn retrieve_valid_files(filepath: String) -> Vec<FileNameInfo> {
     let mut valid_files: Vec<FileNameInfo> = vec![];
-    let path = Path::new("./raw_input");
+    let path = Path::new(&filepath);
 
-    let template_pattern = r"^raw_(\d+)\.zip$";
+    // Case in-sensitive, find pattern
+    let template_pattern = r"(?i)^raw_(\d+)\.zip$";
     let regex = Regex::new(&template_pattern).expect("Invalid regex pattern");
 
     for entry in path.read_dir().expect("read_dir call failed") {
@@ -224,11 +225,14 @@ fn retrieve_valid_files() -> Vec<FileNameInfo> {
             if let Some(captures) = regex.captures(entry.file_name().to_str().unwrap()) {
                 // Collect valid file names
                 if let Some(round) = captures.get(1) {
-                    let fileinfo = FileNameInfo {
-                        full_path: entry.path().to_str().unwrap().to_string(),
-                        round: round.as_str().parse::<u8>().unwrap(),
-                    };
-                    valid_files.push(fileinfo);
+                    // Don't allow 0 round
+                    if round.as_str() != "0".to_string() {
+                        let fileinfo = FileNameInfo {
+                            full_path: entry.path().to_str().unwrap().to_string(),
+                            round: round.as_str().parse::<u8>().unwrap(),
+                        };
+                        valid_files.push(fileinfo);
+                    }
                 }
             }
         }
@@ -237,8 +241,8 @@ fn retrieve_valid_files() -> Vec<FileNameInfo> {
     valid_files
 }
 
-/// Retrieve allocated amount for an address in a specific round
 impl RoundTreeData {
+    /// Retrieve allocated amount for an address in a specific round
     pub fn address_amount(&self, address: &str) -> Result<u128, String> {
         let address_drop: Vec<CumulativeAllocation> = self
             .tree
