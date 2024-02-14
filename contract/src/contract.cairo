@@ -1,6 +1,5 @@
 use starknet::ContractAddress;
 
-// TODO: Ownership transfer? Upgrades?
 
 #[starknet::interface]
 pub trait IDistributor<TContractState> {
