@@ -26,7 +26,7 @@ fn valid_single_file() {
     assert!(files[0].round == 1);
 }
 
-/// Single valid file
+/// Single file with invalid contents
 #[test]
 fn invalid_single_file() {
     let path = "./tests/test_data_input_files/invalid_contents".to_string();
@@ -39,7 +39,7 @@ fn invalid_single_file() {
     remove_zips(&path);
 }
 
-/// Single valid file
+/// Single file with incorrect zip file
 #[test]
 fn invalid_zip_file() {
     let path = "./tests/test_data_input_files/invalid_zip_file".to_string();

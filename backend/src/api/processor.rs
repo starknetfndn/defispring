@@ -7,7 +7,7 @@ use super::{
     merkle_tree::felt_to_b16,
     structs::{
         CairoCalldata, CumulativeAllocation, FileNameInfo, JSONAllocation, MerkleTree,
-        RootQueryResult, RoundAmounts, RoundTreeData,
+        RootQueryResult, RoundAmountMaps, RoundAmounts, RoundTreeData,
     },
 };
 use zip::ZipArchive;
@@ -83,13 +83,6 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
     Ok(relevant_data.get(0).unwrap().clone())
 }
 
-/// Temporary storage
-struct RoundAmountMaps {
-    round: u8,
-    round_amounts: HashMap<String, u128>,
-    cumulative_amounts: HashMap<String, u128>,
-}
-
 /// Converts JSON allocation data into cumulative tree+data per round
 pub fn transform_allocations_to_cumulative_rounds(
     mut allocations: Vec<RoundAmounts>,
@@ -149,7 +142,7 @@ pub fn transform_allocations_to_cumulative_rounds(
 }
 
 /// Converts JSON allocation data into cumulative map-per-round data
-fn map_cumulative_amounts(allocations: Vec<RoundAmounts>) -> Vec<RoundAmountMaps> {
+pub fn map_cumulative_amounts(allocations: Vec<RoundAmounts>) -> Vec<RoundAmountMaps> {
     let mut all_rounds_cums: HashMap<String, u128> = HashMap::new();
     let mut round_maps: Vec<RoundAmountMaps> = Vec::new();
 

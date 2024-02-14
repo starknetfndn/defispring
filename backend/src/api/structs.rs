@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use starknet_crypto::FieldElement;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use utoipa::ToSchema;
 
 /// Contains all data used in one round
@@ -20,6 +20,13 @@ pub struct RoundTreeData {
 pub struct RoundAmounts {
     pub round: u8,
     pub amounts: Vec<JSONAllocation>,
+}
+
+/// Temporary storage inside processing
+pub struct RoundAmountMaps {
+    pub round: u8,
+    pub round_amounts: HashMap<String, u128>,
+    pub cumulative_amounts: HashMap<String, u128>,
 }
 
 /// A Merkle tree with extra allocation data for easier access
