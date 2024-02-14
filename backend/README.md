@@ -37,7 +37,7 @@ The project utilizies the following concepts:
 
 ## Adding new data for allocations
 
-Once you launch the backend the project first extracts all of the allocation information from files. The information is then stored in the program memory, for the backend/API endpoints to utilize.
+Once you launch the backend the program first extracts all of the allocation information from files. The information is then stored in the program memory, for the backend/API endpoints to utilize.
 
 If you add new allocation files you need to restart the backend so it starts processing the files.
 
@@ -68,7 +68,35 @@ The addresses in the JSON files should be Starknet wallet addresses for the reci
 
 Addition of new data has to be connected with reinitializing the backend docker container.
 
-## Notes on performance
+## Program logic
+
+### Startup
+
+Once you start the program, either through Docker or locally with `cargo run`, the following things happen:
+
+1. Function _main_ in file _api_run.rs_ is called.
+1. It calls _update_api_data_ in _data_storage.rs_. This starts the data extraction process in _processor.rs_ function _read_allocations_.
+1. Function _retrieve_valid_files_ is called, which checks the input folder and extracts all file names that have the correct syntax
+1. Function _read_allocations_ continues processing the found files. For each file, it extracts the contents. It takes the first content file and parses it into a raw allocation struct. A separate struct is created to contain the raw allocation data with the round number. The round number is extracted from the file name.
+1. Once all of the raw allocations are extracted, function _transform_allocations_to_cumulative_rounds_ is called for further processing
+1. Function _transform_allocations_to_cumulative_rounds_ calls function _map_cumulative_amounts_ to transform the raw allocations into one main hashmap per round. These hashmaps contain data about round amounts and cumulative amounts, mapped from address to amount.
+1. Once the mappings are calculated, function _transform_allocations_to_cumulative_rounds_ continues by iterating through every address in the maps and calculating cumulative amounts for rounds. It then continues to call the Merkle tree generation in file _merkle_tree.rs_.
+1. The Merkle tree generation takes all the entries given to it and builds the tree recursively.
+1. Once the Merkle trees are generated, all of the data is ready.
+1. The data is given back all the way to function _update_api_data_ which stores the data in memory.
+1. At this point, the data is ready and the API is started in _api_run.rs_.
+
+### Endpoints
+
+Each endpoint is in file _endpoints.rs_. A lot of OpenAPI documentation is associated with each endpoint.
+
+Each endpoint prepares the parameters and calls another function _get_raw_xxx_ in file _processor.rs_. These functions basically just retrieve all of the data from memory, filter it based on parameters and return it.
+
+The endpoints are documented also, with OpenAPI documentation, at TODO.
+
+## Notes
+
+### Performance
 
 If there are a lot of entries in the input files it may take a while to get the backend started. Processing a file with a million entries may take an hour. The program is single-threaded. The backend will output "API ready" once everything has been processed.
 
@@ -76,13 +104,11 @@ The main problem with this is that the same processing is performed every time t
 
 The main bottlenect in the performance is calculating the hash values for the tree. There isn't much that can be done to improve that directly.
 
-## Other notes
-
 ### Extraction of the capital from the smart contract by the owner account
 
 At this point, there is no need to have "extraction of the capital by the owner/foundation" functionality, but there is a way to do this. This means that the owner of the smart contract has to be properly secured/safe.
 
-Imagine there is 100 tokens on the smart contract. Malicious owner account can submit root that corresponds to a tree that would send the 100 to itself, even though this account is not eligible at all. 
+Imagine there is 100 tokens on the smart contract. Malicious owner account can submit root that corresponds to a tree that would send the 100 to itself, even though this account is not eligible at all.
 
 ### Removal of root(s) from smart contract is not possible
 
@@ -91,6 +117,7 @@ It is not possible to remove or overwrite root(s) in the smart contract. It is r
 In can case that a mistake happens here is what can be done:
 
 - If an account has been omitted or account has lower allocation that it should have a new root that corrects the state can be added.
-- If an account has been added or has higher allocation 
+- If an account has been added or has higher allocation
+
 1. In case account owner stores new root that does corrects this error, someone with the knowledge of the tree that has the mistake can potentially provide the information to the given account that can claim more than it should.
 1. Possible way would be to extract all capital through storing a new merkle root that would allow for sending the remaining capital on the smart contract to a newly deployed distribution smart contract (it would likely have to go through a third account). This newly redeployed contract would have to have trees adjusted for the already claimed tokens in the previous one.
