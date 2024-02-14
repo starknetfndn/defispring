@@ -24,3 +24,11 @@ The Cairo contract is documented at <a href='contract/README.md'>the contract fo
 ## Frontend
 
 The frontend is documented at <a href='frontend/README.md'>the frontend folder</a>.
+
+## Tesnet deployment
+
+Smart contract is deployed on Sepolia at address: TODO
+
+Backend (for the testnet) is deployed at: TODO
+
+Frontend (for the testnet) is deployat: TODO

@@ -12,7 +12,7 @@ $ docker build -t allocation-backend
 $ docker run -v DIR_WITH_INPUT_ZIP:/app/raw_input -p 8080:8080 allocation-backend
 ```
 
-Make sure that DIR_WITH_INPUT_ZIP is a folder on your machine that contains .zip files with the allocation specifications.
+Make sure that DIR_WITH_INPUT_ZIP is a folder on your machine that contains .zip files with the allocation specifications. These .zip files are processed on the container start.
 
 TODO: push Docker image to a registry.
 
