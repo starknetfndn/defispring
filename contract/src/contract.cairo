@@ -34,7 +34,7 @@ mod Distributor {
     use openzeppelin::access::ownable::ownable::OwnableComponent;
 
     const STRK_ADDRESS: felt252 =
-        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d; // Sepolia STRK. When it's deployed on mainnet, TODO update.
+        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d; // Sepolia STRK, assuming it's the same on mainnet
 
     #[storage]
     struct Storage {
@@ -53,7 +53,7 @@ mod Distributor {
     #[event]
     enum Event {
         Claimed: Claimed,
-        OwnableEvent: OwnableComponent::Event // TODO check up on whether I still need #[flat]
+        OwnableEvent: OwnableComponent::Event
     }
 
     #[derive(Drop, starknet::Event)]
