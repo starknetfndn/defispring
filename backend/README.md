@@ -4,7 +4,7 @@ The backend is written in Rust. Running the project launches a REST API that can
 
 ## Deployment
 
-The backend can be run in a Docker container. It can be be deployed to any cloud architecture that supports containers.
+The backend can be run in a Docker container. It can be be deployed to any cloud architecture that supports containers, it is expected that it will be run behind a reverse proxy that provides e.g. HTTPS.
 
 ```
 $ cd backend
@@ -12,9 +12,15 @@ $ docker build -t allocation-backend
 $ docker run -v DIR_WITH_INPUT_ZIP:/app/raw_input -p 8080:8080 allocation-backend
 ```
 
-Make sure that DIR_WITH_INPUT_ZIP is a folder on your machine that contains .zip files with the allocation specifications.
+Make sure that DIR_WITH_INPUT_ZIP is a folder on your machine that contains .zip files with the allocation specifications. These .zip files are processed on the container start.
 
 TODO: push Docker image to a registry.
+
+You can naturally also run it like any other compiled program; use `cargo build --release ` to build it and then use the binary in target/.
+
+## Startup time
+
+As the whole tree is built on startup and saved in memory, startup can take tens of minutes, up to hours on very slow hardware and/or big trees.
 
 ## Running the project locally for testing purposes
 
@@ -102,7 +108,7 @@ If there are a lot of entries in the input files it may take a while to get the 
 
 The main problem with this is that the same processing is performed every time the backend is started, because all the trees are only stored in memory. This approach may need to be revised in the future.
 
-The main bottlenect in the performance is calculating the hash values for the tree. There isn't much that can be done to improve that directly.
+The main bottleneck in the performance is calculating the hash values for the tree. There isn't much that can be done to improve that directly.
 
 ### Extraction of the capital from the smart contract by the owner account
 

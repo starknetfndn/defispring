@@ -58,6 +58,7 @@ fn test_single_claims_multiple_roots() {
     ];
 
     contract.claim(0x88, proof_1.span());
+    assert(tok.balance_of(CLAIMEE_1.try_into().unwrap()) == 0x88, 'wrong bal claimee 1');
 
     start_prank(
         CheatTarget::One(contract.contract_address), CLAIMEE_2.try_into().unwrap()
@@ -85,6 +86,13 @@ fn test_single_claims_multiple_roots() {
 
     contract.claim(0xd5, proof_3.span());
     assert(tok.balance_of(CLAIMEE_3.try_into().unwrap()) == 0xd5, 'wrong bal claimee 3');
+    // CLAIMEE_3 Trying to claim the same allocation twice
+    contract.claim(0xd5, proof_3.span());
+    assert(tok.balance_of(CLAIMEE_3.try_into().unwrap()) == 0xd5, 'wrong bal claimee 3');
+
+    // Checking that CLAIMEE_3 claiming did not effect first two claimees.
+    assert(tok.balance_of(CLAIMEE_1.try_into().unwrap()) == 0x88, 'wrong bal claimee 1');
+    assert(tok.balance_of(CLAIMEE_2.try_into().unwrap()) == 0x89, 'wrong bal claimee 2');
 }
 
 #[test]
