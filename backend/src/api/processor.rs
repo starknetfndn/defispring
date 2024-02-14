@@ -101,13 +101,13 @@ pub fn transform_allocations_to_cumulative_rounds(
         let mut curr_round_data: Vec<CumulativeAllocation> = Vec::new();
         let mut round_total_amount = 0_u128;
 
+        // The cumulative map has all addresses that have any allocation in this round and all previous rounds
         for key in cum_map.cumulative_amounts.keys() {
             let address_cumulative = CumulativeAllocation {
                 address: key.to_string().to_lowercase(),
                 cumulative_amount: cum_map.cumulative_amounts[key],
             };
             // If this round has this address add its amount to the round total amount
-            // The cumulative hashmap always has all addresses in it
             if cum_map.round_amounts.contains_key(key) {
                 round_total_amount += cum_map.round_amounts[key];
             }
