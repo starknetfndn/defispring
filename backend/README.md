@@ -94,11 +94,9 @@ Once you start the program, either through Docker or locally with `cargo run`, t
 
 ### Endpoints
 
-Each endpoint is in file _endpoints.rs_. A lot of OpenAPI documentation is associated with each endpoint.
+Each endpoint is in file _endpoints.rs_. OpenAPI documentation is associated with each endpoint.
 
 Each endpoint prepares the parameters and calls another function _get_raw_xxx_ in file _processor.rs_. These functions basically just retrieve all of the data from memory, filter it based on parameters and return it.
-
-The endpoints are documented also, with OpenAPI documentation, at TODO.
 
 ## Notes
 

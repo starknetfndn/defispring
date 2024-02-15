@@ -11,9 +11,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 
 export default function Home() {
-  const BASE_BACKEND_URL = "http://127.0.0.1:8080/";
+  const BASE_BACKEND_URL = "http://35.195.237.203:8080/";
   const CONTRACT_ADDRESS =
-    "0x120412481b79cfd73eb1160dee54fc944db7dffbd46ff1129f7de27c472ab6a";
+    "0x03e942530ef96da8e65e453f0fbbb198994515c69edd1dcf3be353b0956fbd1a";
 
   const { contract } = useContract({
     abi: contractAbi,
@@ -130,19 +130,12 @@ export default function Home() {
       <WalletBar />
       {isClaimReady && (
         <div>
-          <p>
-            <b>Execute</b>
-          </p>
-
           <div>
             <Button onClick={claim}>Claim allocation</Button>
           </div>
         </div>
       )}
       <div>
-        <p>
-          <b>Results</b>
-        </p>
         {alreadyClaimed !== undefined && (
           <div>Already claimed: {alreadyClaimed.toString()}</div>
         )}
