@@ -113,7 +113,7 @@ impl Node {
         let address = FieldElement::from_str(&strip_leading_zeroes(&allocation.address)).unwrap();
         let cumulated_amount = FieldElement::from(allocation.cumulative_amount);
         // keep order address, amount (cannot use fn hash)
-        let value = pedersen_hash(&address, &cumulated_amount);
+        let value = poseidon_hash(poseidon_hash(address, cumulated_amount), FieldElement::ONE);
 
         Node {
             left_child: None,
@@ -170,7 +170,7 @@ pub fn felt_to_b16(felt: &FieldElement) -> String {
 
 pub fn hash(a: &FieldElement, b: &FieldElement) -> FieldElement {
     if a.lt(b) {
-        return pedersen_hash(a, b);
+        return poseidon_hash(*a, *b);
     }
-    pedersen_hash(b, a)
+    poseidon_hash(*b, *a)
 }

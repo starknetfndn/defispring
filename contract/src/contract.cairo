@@ -21,7 +21,7 @@ pub trait IDistributor<TContractState> {
 #[starknet::contract]
 mod Distributor {
     use alexandria_merkle_tree::merkle_tree::{
-        Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
+        Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait
     };
     use core::array::{ArrayTrait, SpanTrait};
     use core::hash::LegacyHash;
@@ -106,7 +106,7 @@ mod Distributor {
         ) -> felt252 {
             let mut merkle_tree: MerkleTree<Hasher> = MerkleTreeTrait::new();
 
-            let leaf = LegacyHash::hash(claimee.into(), amount);
+            let leaf = LegacyHash::hash(LegacyHash::hash(claimee.into(), amount), 1);
             merkle_tree.compute_root(leaf, proof)
         }
 
