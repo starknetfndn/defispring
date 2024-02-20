@@ -1,12 +1,10 @@
-use core::result::ResultTrait;
-use distributor::contract::{Distributor, IDistributorDispatcher, IDistributorDispatcherTrait};
-use Distributor::STRK_ADDRESS;
-use starknet::{ContractAddress, deploy_syscall};
 use core::{ArrayTrait, SpanTrait};
 use core::debug::PrintTrait;
+use distributor::contract::{Distributor, IDistributorDispatcher, IDistributorDispatcherTrait};
+use Distributor::STRK_ADDRESS;
 use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use snforge_std::{ContractClassTrait, declare, start_prank, CheatTarget};
-
+use starknet::{ContractAddress, deploy_syscall};
 
 const ADMIN_ADDR: felt252 = 0x42;
 const CLAIMEE_1: felt252 = 0x13;
