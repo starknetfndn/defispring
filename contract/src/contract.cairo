@@ -20,18 +20,17 @@ pub trait IDistributor<TContractState> {
 
 #[starknet::contract]
 mod Distributor {
-    use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait;
-    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use core::traits::TryInto;
-    use distributor::contract::IDistributor;
-    use starknet::ContractAddress;
-    use core::array::{ArrayTrait, SpanTrait};
     use alexandria_merkle_tree::merkle_tree::{
         Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
     };
+    use core::array::{ArrayTrait, SpanTrait};
     use core::hash::LegacyHash;
+    use core::traits::TryInto;
+    use distributor::contract::IDistributor;
+    use openzeppelin::access::ownable::ownable::{OwnableComponent, OwnableComponent::InternalTrait};
+    use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+    use starknet::ContractAddress;
     use starknet::get_caller_address;
-    use openzeppelin::access::ownable::ownable::OwnableComponent;
 
     const STRK_ADDRESS: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d; // Sepolia STRK, assuming it's the same on mainnet
