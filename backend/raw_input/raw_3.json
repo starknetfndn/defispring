@@ -1,0 +1,38 @@
+[
+    {
+        "address": "0x0161A9bCA8dCc5975A03b12f5F7bF9610e1541635eb40eB3A89bAeeDC168e636",
+        "amount": "10000"
+    },
+    {
+        "address": "0x04a25d1d6e2633185c1f2132db2b7cf3d462535a47fe585e45ddc5e6059ba678",
+        "amount": "10000"
+    },
+    {
+        "address": "0x04384b20de71c9601956cc0ad5ea6991c1ea74e04c979747e10d9cf957f10623",
+        "amount": "10000"
+    },
+    {
+        "address": "0x00d79a15d84f5820310db21f953a0fae92c95e25d93cb983cc0c27fc4c52273c",
+        "amount": "10000"
+    },
+    {
+        "address": "0x0011d341c6e841426448ff39aa443a6dbb428914e05ba2259463c18308b86233",
+        "amount": "10000"
+    },
+    {
+        "address": "0x06d258bCf2C91E4091548D730624d035fDC6FD6630067f987d4eA9022a07D760",
+        "amount": "10000"
+    },
+    {
+        "address": "0x02686c8986ee3764609fe1066888fa5c5dfdd2ee279f10ccbb9ec63740f7c9fa",
+        "amount": "10001"
+    },
+    {
+        "address": "0x0583a9d956d65628f806386ab5b12dccd74236a3c6b930ded9cf3c54efc722a1",
+        "amount": "10001"
+    },
+    {
+        "address": "0x03f37e36c20E85e6F39b2C6F6e7ECEB2e3aAb40b94064f20983588cfe9f6fc60",
+        "amount": "10000"
+    }
+]
