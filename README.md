@@ -27,7 +27,7 @@ The frontend is documented at <a href='frontend/README.md'>the frontend folder</
 
 ## Testnet deployment
 
-Smart contract is deployed on Sepolia at address: [0x03e942530ef96da8e65e453f0fbbb198994515c69edd1dcf3be353b0956fbd1a](https://sepolia.voyager.online/contract/0x03e942530ef96da8e65e453f0fbbb198994515c69edd1dcf3be353b0956fbd1a#readContract)
+Smart contract is deployed on Sepolia at address: [0x06781eddde09e243eb4280ec8e6a9ba6aced153c4da1ddd059adf9ea61e51526](https://sepolia.voyager.online/contract/0x06781eddde09e243eb4280ec8e6a9ba6aced153c4da1ddd059adf9ea61e51526#readContract)
 
 Backend (for the testnet) is deployed at: [35.195.237.203:8080](http://35.195.237.203:8080/swagger-ui/)
 
