@@ -4,7 +4,7 @@ version = 1
 [[package]]
 name = "alexandria_merkle_tree"
 version = "0.1.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git#800f5ad217847b5ded63c0302a444161766ee9d6"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git#9e3565d31686da5b76a14d74ab9c773778591c60"
 
 [[package]]
 name = "distributor"
@@ -17,8 +17,8 @@ dependencies = [
 
 [[package]]
 name = "openzeppelin"
-version = "0.8.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.9.0#426cacf34aada771d3dad7b0240e9099a634cd57"
+version = "0.9.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.9.0#861fc416f87addbe23a3b47f9d19ab27c10d5dc8"
 
 [[package]]
 name = "snforge_std"
