@@ -20,11 +20,12 @@ pub trait IDistributor<TContractState> {
 
 #[starknet::contract]
 mod Distributor {
+    use core::hash::{LegacyHash, HashStateTrait};
     use alexandria_merkle_tree::merkle_tree::{
-        Hasher, MerkleTree, poseidon::PoseidonHasherImpl, MerkleTreeTrait
+        Hasher, MerkleTree, pedersen::PedersenHasherImpl, MerkleTreeTrait
     };
     use core::array::{ArrayTrait, SpanTrait};
-    use core::hash::LegacyHash;
+    use core::poseidon::hades_permutation;
     use core::traits::TryInto;
     use distributor::contract::IDistributor;
     use openzeppelin::access::ownable::ownable::{OwnableComponent, OwnableComponent::InternalTrait};
@@ -106,7 +107,9 @@ mod Distributor {
         ) -> felt252 {
             let mut merkle_tree: MerkleTree<Hasher> = MerkleTreeTrait::new();
 
-            let leaf = LegacyHash::hash(LegacyHash::hash(claimee.into(), amount), 1);
+            // https://docs.starknet.io/documentation/architecture_and_concepts/Cryptography/hash-functions/#poseidon_hash
+            // using hades perm directly to preserve compatibility with Rust implementation
+            let (leaf, _, _) = hades_permutation(claimee.into(), amount.into(), 2);
             merkle_tree.compute_root(leaf, proof)
         }
 

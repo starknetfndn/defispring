@@ -1,3 +1,4 @@
+use core::hash::HashStateExTrait;
 use core::{ArrayTrait, SpanTrait};
 use core::debug::PrintTrait;
 use distributor::contract::{Distributor, IDistributorDispatcher, IDistributorDispatcherTrait};
@@ -42,17 +43,16 @@ fn test_single_claims_multiple_roots() {
     start_prank(CheatTarget::One(contract.contract_address), ADMIN_ADDR.try_into().unwrap());
 
     contract.add_root(0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98); // decoy
-    contract.add_root(0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe);
+    contract.add_root(0xf7c8d3f309262572ad35df8ff6c33f24d8114c60eac3bc27bf42382ca82faf);
     contract.add_root(0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b); // decoy
-    contract.add_root(0x3b00fdd4c5c25445bc68e49391eef61e9f3c4e5f5b90bca4fbd7d49bd78aea6);
+    contract.add_root(0x3af4d227c0978ff30099df450f64676ef25f9255d4fa36f900be2aed17f332d); // claimee 2 only
 
     start_prank(
         CheatTarget::One(contract.contract_address), CLAIMEE_1.try_into().unwrap()
     );
 
     let proof_1 = array![
-        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
-        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98,
+        0x2a18afb0550a011d54ca3940648e59894c06e4c3d0a611256c0b575bd528b3b
     ];
 
     contract.claim(0x88, proof_1.span());
@@ -63,8 +63,7 @@ fn test_single_claims_multiple_roots() {
     );
 
     let proof_2 = array![
-        0x5915822da3096dbf676bd0b5b2c2b27638535a85d568e0e7f282c46c1fb3577,
-        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98
+        0x7fa669b18489a1632df0de6e4d2b58558457b10fbcdeae8975e7e4d8d2e15db
     ];
 
     contract.claim(0x89, proof_2.span());
@@ -78,8 +77,7 @@ fn test_single_claims_multiple_roots() {
     );
 
     let proof_3 = array![
-        0x4595ba50b125378b4ea5b1d84d2655dec0f4d6f9952e790adde1339585fc3b4,
-        0x42e710d7442c006ddba591c2c5de014a2e08cd3cfbd46d95d9e76351938be01
+        0x1373596138a034686261d487a628b90e33c38391196fe57a4378cfe5a4af3fa
     ];
 
     contract.claim(0xd5, proof_3.span());
@@ -99,14 +97,13 @@ fn test_claim_invalid_proof() {
     let contract = deploy();
     deploy_token(contract.contract_address);
     start_prank(CheatTarget::One(contract.contract_address), ADMIN_ADDR.try_into().unwrap());
-    contract.add_root(0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe);
+    contract.add_root(0xf7c8d3f309262572ad35df8ff6c33f24d8114c60eac3bc27bf42382ca82faf);
 
     start_prank(
         CheatTarget::One(contract.contract_address), CLAIMEE_1.try_into().unwrap()
     );
     let proof = array![
-        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
-        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98,
+        0x2a18afb0550a011d54ca3940648e59894c06e4c3d0a611256c0b575bd528b3b,
         0x1
     ];
     contract.claim(0x88, proof.span());
@@ -126,8 +123,7 @@ fn test_claim_wrong_claimee() {
     );
 
     let proof_1 = array![
-        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
-        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98,
+        0x2a18afb0550a011d54ca3940648e59894c06e4c3d0a611256c0b575bd528b3b
     ];
 
     contract.claim(0x88, proof_1.span());
@@ -145,8 +141,7 @@ fn test_claim_wrong_amount() {
     );
 
     let proof_1 = array![
-        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
-        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98,
+        0x2a18afb0550a011d54ca3940648e59894c06e4c3d0a611256c0b575bd528b3b
     ];
 
     // correct amount is 0x88.
@@ -157,14 +152,13 @@ fn test_claim_wrong_amount() {
 fn test_compute_root() {
     let contract = deploy();
     let proof = array![
-        0x2f582855ca3f9bb074b939b1670554bd01334b0bc9fe95ed7577295db1086b,
-        0xe5c5a70b996a566aa28559817bac9a79a6575090abaa9509f606e1b25dd98
+        0x2a18afb0550a011d54ca3940648e59894c06e4c3d0a611256c0b575bd528b3b
     ];
     let root = contract.get_root_for(CLAIMEE_1.try_into().unwrap(), 0x88, proof.span());
     assert(
-        root == 0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe,
+        root == 0xf7c8d3f309262572ad35df8ff6c33f24d8114c60eac3bc27bf42382ca82faf,
         'roots dont match'
     );
     let root = contract.get_root_for(CLAIMEE_1.try_into().unwrap(), 0x0, proof.span());
-    assert(root != 0x45aa6b933e7b76e85c77fc12b2cc58c22ba87b76fb7595bd315fb3ede730dfe, 'wrong root');
+    assert(root != 0xf7c8d3f309262572ad35df8ff6c33f24d8114c60eac3bc27bf42382ca82faf, 'wrong root');
 }
