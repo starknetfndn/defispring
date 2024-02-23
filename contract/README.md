@@ -1,13 +1,14 @@
 # DeFi Incentives Distribution Contract
 
-## Deployment
+## Usage
 
-You need snforge 0.17.0 and scarb 2.5.3 (with Cairo 2.5.3)
+The audited contract, class hash 0x006a54af2934978ac59b27b91291d3da634f161fd5f22a2993da425893c44c64, is already declared on Starknet Mainnet and Starknet Sepolia. You only have do deploy it – doesn't matter how, but e.g. sncast works:
 
-Run tests: `snforge test`
-Build the contract: `scarb build`
+```sncast deploy -g 0x006a54af2934978ac59b27b91291d3da634f161fd5f22a2993da425893c44c64 -c OWNER_ACCOUNT```
 
-After that you can deploy 'as usual' with starkli/sncast.
+You can also directly invoke the [Universal Deployer Contract](https://docs.starknet.io/documentation/architecture_and_concepts/Smart_Contracts/universal-deployer/).
+
+The owner wallet _**cannot** be changed later_. We recommend you use a multisig for the owner.
 
 ## Interacting with the contract
 
@@ -38,3 +39,12 @@ It is assumed that the owner account is not a malicious account. It is assumed t
 ### Merkle root IDs
 
 Merkle root IDs in the merkle_roots storage do not have to correspond to the incentive allocation "in the real world". This ID (number) is not used from the "outside".
+
+## Development
+
+You need snforge 0.17.0 and scarb 2.5.3 (with Cairo 2.5.3)
+
+Run tests: `snforge test`
+Build the contract: `scarb build`
+
+After that you can deploy 'as usual' with starkli/sncast.
