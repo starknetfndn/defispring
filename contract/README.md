@@ -10,6 +10,10 @@ You can also directly invoke the [Universal Deployer Contract](https://docs.star
 
 The owner wallet _**cannot** be changed later_. We recommend you use a multisig for the owner.
 
+## Audit
+
+The contract has been audited by Nethermind: https://github.com/NethermindEth/PublicAuditReports/blob/main/NM0194-FINAL_STARKNET_TOKEN_DISTRIBUTOR.pdf
+
 ## Interacting with the contract
 
 The contract is to be deployed by each protocol that distributes incentives separately.
