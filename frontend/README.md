@@ -1,30 +1,40 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React component that can be imported by other protocols and used to claim allocations.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The frontend is implemented with React. It has the bare minimum functionality required to showcase the functionality.
 
-## Expanding the ESLint configuration
+## Functionality
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+This frontend has the following functionality:
 
-- Configure the top-level `parserOptions` property like this:
+1. Connect your Starknet wallet
+1. Check how many tokens you have been allocated
+1. Check how many tokens you have already claimed
+1. Prepare to claim your tokens (retrieves some needed metadata)
+1. Claim your tokens. Requires that you first execute the preparation phase
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## Trying it out
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+All of the functionality is only for demonstration purposes. However, if you want to test it out yourself, you need to do at least the following changes to the code:
+
+1. Change the `BASE_BACKEND_URL` in `src/pages/Home.tsx` to point to your backend. Or leave as is, if you are testing locally (and running the backend in that address)
+1. Change the `CONTRACT_ADDRESS` to point to your deployed contract
+1. Change the used/supported networks in `starknet-provider.tsx`
+1. Make sure the used ABI is up to date (`src/abi.json`)
+
+## Implementation details
+
+When you implement this yourself, make sure of at least the following nasty details:
+
+1. All address are zero-padded at the beginning
+
+### Installation
+
+This is a regular NextJS project with npm. Therefore, installation steps are:
+
+1. Run `npm install`
+1. Run `npm run build` to build some metadata needed by NextJS
+1. Run `npm run dev` to run locally
