@@ -1,7 +1,6 @@
-"use client";
 import { ReactNode } from "react";
 
-import { devnet, goerli, mainnet, sepolia } from "@starknet-react/chains";
+import { mainnet, sepolia } from "@starknet-react/chains";
 import {
   StarknetConfig,
   argent,

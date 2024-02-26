@@ -1,6 +1,5 @@
-"use client";
-import WalletBar, { zeroPadHex } from "@/components/WalletBar";
-import contractAbi from "./abi.json";
+import WalletBar from "../components/WalletBar";
+import contractAbi from "../abi.json";
 import {
   useAccount,
   useContract,
@@ -8,9 +7,10 @@ import {
   useContractWrite,
 } from "@starknet-react/core";
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "../components/Button";
+import { zeroPadHex } from "../utils/utils";
 
-export default function Home() {
+function Home() {
   const BASE_BACKEND_URL = "http://35.195.237.203:8080/";
   const CONTRACT_ADDRESS =
     "0x03e942530ef96da8e65e453f0fbbb198994515c69edd1dcf3be353b0956fbd1a";
@@ -30,17 +30,16 @@ export default function Home() {
   }
 
   const [walletAddress, setWalletAddress] = useState<string>("");
-  const [alreadyClaimed, setAlreadyClaimed] = useState<BigInt>(BigInt(0));
-  const [allocationAmount, setAllocationAmount] = useState<BigInt>(BigInt(0));
+  const [alreadyClaimed, setAlreadyClaimed] = useState<bigint>(0n);
+  const [allocationAmount, setAllocationAmount] = useState<bigint>(0n);
   const [receivedcalldata, setReceivedCalldata] = useState<ClaimCalldata>();
   const [isClaimReady, setIsClaimReady] = useState<boolean>(false);
-  const [errors, setErrors] = useState<String>("");
+  const [errors, setErrors] = useState<string>("");
 
   const {
     data: alreadyClaimedData,
     isError,
     isLoading,
-    error,
   } = useContractRead({
     functionName: "amount_already_claimed",
     args: [walletAddress!],
@@ -55,11 +54,12 @@ export default function Home() {
       setWalletAddress(addr);
       prepareClaim(addr);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   useEffect(() => {
     if (!isLoading && !isError) {
-      setAlreadyClaimed(alreadyClaimedData as BigInt);
+      setAlreadyClaimed(alreadyClaimedData as bigint);
     }
   }, [isLoading, isError, alreadyClaimedData]);
 
@@ -69,7 +69,7 @@ export default function Home() {
         BASE_BACKEND_URL + "get_allocation_amount?address=" + walletAddress
       );
       const amount = await response.json();
-      let num = BigInt(amount);
+      const num = BigInt(amount);
 
       setAllocationAmount(num);
     };
@@ -92,16 +92,12 @@ export default function Home() {
     );
   }, [contract, receivedcalldata, walletAddress]);
 
-  const {
-    writeAsync: callClaim,
-    data,
-    isPending,
-  } = useContractWrite({
+  const { writeAsync: callClaim } = useContractWrite({
     calls,
   });
 
   // Retrieves calldata for the claim
-  const prepareClaim = async (usedAddress: String) => {
+  const prepareClaim = async (usedAddress: string) => {
     if (!usedAddress) {
       console.error("No wallet connected");
       return;
@@ -151,3 +147,5 @@ export default function Home() {
     </main>
   );
 }
+
+export default Home;
