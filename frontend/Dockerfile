@@ -1,17 +1,18 @@
 # Build project
-FROM node:20.11 AS build
+FROM node:20.11-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm install --force
+
+COPY . .
 RUN npm run build
 
 # Setup Nginx
 FROM nginx:1.23
 
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 RUN rm /etc/nginx/nginx.conf
 
