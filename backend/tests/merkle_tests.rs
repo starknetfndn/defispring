@@ -1,4 +1,4 @@
-use starknet_crypto::{pedersen_hash, FieldElement};
+use starknet_crypto::{pedersen_hash, poseidon_hash, FieldElement};
 use std::str::FromStr;
 
 use defispring::api::structs::{CairoCalldata, CumulativeAllocation, MerkleTree};
@@ -19,7 +19,7 @@ fn cairo_root_generating(
     let address = FieldElement::from_str(&original_address).unwrap();
 
     // leaf is hashed address and amount (base16)
-    let mut hash_value = pedersen_hash(&address, &amount);
+    let mut hash_value = poseidon_hash(address, amount);
 
     println!("{}", hash_value);
 
