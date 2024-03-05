@@ -51,9 +51,9 @@ pub struct RootQueryResult {
     /// The Merkle root for this round
     pub root: String,
     /// The accumulated amount of tokens to be distributed in a round. Includes amounts from all previous rounds
-    pub accumulated_total_amount: u128,
+    pub accumulated_total_amount: String,
     /// The total amount of tokens to be distributed in a round. Includes amounts only from one round
-    pub round_total_amount: u128,
+    pub round_total_amount: String,
 }
 
 /// A node in a Merkle tree

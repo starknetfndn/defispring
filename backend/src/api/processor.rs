@@ -55,8 +55,8 @@ pub fn get_raw_root(round: Option<u8>) -> Result<RootQueryResult, String> {
     };
     let res = RootQueryResult {
         root: felt_to_b16(&relevant_data.tree.root.value),
-        accumulated_total_amount: relevant_data.accumulated_total_amount,
-        round_total_amount: relevant_data.round_total_amount,
+        accumulated_total_amount: relevant_data.accumulated_total_amount.to_string(),
+        round_total_amount: relevant_data.round_total_amount.to_string(),
     };
     Ok(res)
 }

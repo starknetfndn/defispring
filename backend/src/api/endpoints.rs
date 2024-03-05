@@ -65,7 +65,7 @@ pub struct GetAllocationAmountParams {
 #[utoipa::path(
     tag = "Gets the allocated, accumulated amount for a given address",
     responses(
-        (status = 200, description= "The allocated amount in hex", body = u128),       
+        (status = 200, description= "The allocated amount", body = String),       
     ),
     params(
         GetAllocationAmountParams
@@ -77,7 +77,7 @@ pub async fn get_allocation_amount(query: web::Query<GetAllocationAmountParams>)
     let round = if query.round == Some(0) { None } else { query.round };
     
     match get_raw_allocation_amount(round, &query.address.to_lowercase()) {
-        Ok(value) => HttpResponse::Ok().json(value),
+        Ok(value) => HttpResponse::Ok().json(value.to_string()),
         Err(value) => HttpResponse::BadRequest().json(value)
     }
 }
