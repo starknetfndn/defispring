@@ -25,8 +25,8 @@ pub struct RoundAmounts {
 /// Temporary storage inside processing
 pub struct RoundAmountMaps {
     pub round: u8,
-    pub round_amounts: HashMap<String, u128>,
-    pub cumulative_amounts: HashMap<String, u128>,
+    pub round_amounts: HashMap<FieldElement, u128>,
+    pub cumulative_amounts: HashMap<FieldElement, u128>,
 }
 
 /// A Merkle tree with extra allocation data for easier access
@@ -73,9 +73,9 @@ pub struct JSONAllocation {
 }
 
 /// Accumulated allocation data. Based on JSON data plus
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct CumulativeAllocation {
-    pub address: String,
+    pub address: FieldElement,
     pub cumulative_amount: u128,
 }
 

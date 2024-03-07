@@ -1,4 +1,4 @@
-use starknet_crypto::{poseidon_hash, poseidon_hash_single, pedersen_hash, FieldElement};
+use starknet_crypto::{pedersen_hash, poseidon_hash, FieldElement};
 use std::{collections::HashSet, str::FromStr, vec};
 
 use super::structs::{CairoCalldata, CumulativeAllocation, MerkleTree, Node};
@@ -70,7 +70,7 @@ impl MerkleTree {
         let allocation = self
             .allocations
             .iter()
-            .find(|a| &FieldElement::from_str(&a.address).unwrap() == &felt_address)
+            .find(|a| &a.address == &felt_address)
             .unwrap();
 
         let amount = FieldElement::from(allocation.cumulative_amount);
@@ -110,7 +110,7 @@ impl Node {
         }
     }
     fn new_leaf(allocation: CumulativeAllocation) -> Self {
-        let address = FieldElement::from_str(&strip_leading_zeroes(&allocation.address)).unwrap();
+        let address = allocation.address;
         let cumulated_amount = FieldElement::from(allocation.cumulative_amount);
         // keep order address, amount
         let value = poseidon_hash(address, cumulated_amount);
