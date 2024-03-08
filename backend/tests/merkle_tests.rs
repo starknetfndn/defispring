@@ -98,9 +98,12 @@ fn invalid_calldata_address() {
 
     let mt = MerkleTree::new(allocations.clone());
 
-    assert_eq!(mt.address_calldata("blah").unwrap_err(), "Invalid address");
-    assert_eq!(mt.address_calldata("0xq").unwrap_err(), "Invalid address");
-    assert_eq!(mt.address_calldata("1q").unwrap_err(), "Invalid address");
+    assert_eq!(
+        mt.address_calldata("blah").unwrap_err(),
+        "invalid character"
+    );
+    assert_eq!(mt.address_calldata("0xq").unwrap_err(), "invalid character");
+    assert_eq!(mt.address_calldata("1q").unwrap_err(), "invalid character");
 }
 
 /// Tests that modifying the calldata fails

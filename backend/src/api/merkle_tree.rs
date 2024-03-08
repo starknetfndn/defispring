@@ -40,10 +40,8 @@ impl MerkleTree {
     }
 
     pub fn address_calldata(&self, address: &str) -> Result<CairoCalldata, String> {
-        let felt_address = match FieldElement::from_str(address) {
-            Ok(v) => v,
-            _ => return Err("Invalid address".to_string()),
-        };
+        let felt_address = FieldElement::from_str(address).map_err(|e| e.to_string())?;
+
         if !&self.root.accessible_addresses.contains(&felt_address) {
             return Err("Address not found in tree".to_string());
         }
