@@ -227,3 +227,34 @@ fn test_skip_round() {
     assert!(res[1].address_amount(two).unwrap() == 39_u128);
     assert!(res[1].address_amount(three).unwrap() == 7_u128);
 }
+
+/// Tests big allocation amounts
+#[test]
+fn test_big_amounts() {
+    let one: FieldElement = FieldElement::from_str("0x1").unwrap();
+    let two: FieldElement = FieldElement::from_str("0x2").unwrap();
+
+    let mut drop: Vec<JSONAllocation> = vec![];
+    drop.push(JSONAllocation {
+        address: "0x1".to_string(),
+        amount: (u128::MAX / 2).to_string(),
+    });
+    drop.push(JSONAllocation {
+        address: "0x2".to_string(),
+        amount: (u128::MAX / 2 - 5).to_string(),
+    });
+    drop.push(JSONAllocation {
+        address: "0x2".to_string(),
+        amount: "3".to_string(),
+    });
+
+    let mut round_data: Vec<RoundAmounts> = Vec::new();
+    round_data.push(RoundAmounts {
+        round: 1u8,
+        amounts: drop,
+    });
+    let res = transform_allocations_to_cumulative_rounds(round_data);
+
+    assert!(res[0].address_amount(one).unwrap() == u128::MAX / 2);
+    assert!(res[0].address_amount(two).unwrap() == u128::MAX / 2 - 2);
+}
