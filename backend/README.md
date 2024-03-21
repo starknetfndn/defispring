@@ -34,7 +34,7 @@ The endpoints are documented with OpenAPI documentation. A Swagger UI is generat
 
 The Swagger UI can be used also to test the endpoints.
 
-An example deployment, with Swagger UI, can be found at TODO.
+An example deployment, with Swagger UI, can be found at http://35.195.237.203:8080/swagger-ui/ .
 
 ## Concepts
 
