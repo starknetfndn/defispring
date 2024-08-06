@@ -75,15 +75,12 @@ fn get_round_data(round: Option<u8>) -> Result<RoundTreeData, String> {
             Some(p) => p.round,
         },
     };
-    let relevant_data: Vec<RoundTreeData> = round_data
-        .iter()
-        .filter(|&p| p.round == use_round)
-        .cloned()
-        .collect();
-    if relevant_data.len() != 1 {
-        return Err("No allocation data available".to_string());
+    let relevant_data = round_data.iter().find(|&p| p.round == use_round);
+
+    match relevant_data {
+        Some(data) => Ok(data.clone()),
+        None => Err("No allocation data available".to_string()),
     }
-    Ok(relevant_data.get(0).unwrap().clone())
 }
 
 /// Converts JSON allocation data into cumulative tree+data per round
