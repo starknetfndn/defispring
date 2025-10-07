@@ -8,7 +8,7 @@ The backend can be run in a Docker container. It can be be deployed to any cloud
 
 ```
 $ cd backend
-$ docker build -t allocation-backend
+$ docker build -t allocation-backend .
 $ docker run -v DIR_WITH_INPUT_ZIP:/app/raw_input -p 8080:8080 allocation-backend
 ```
 
